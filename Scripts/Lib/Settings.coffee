@@ -1,4 +1,4 @@
-class SettingsBase
+class Settings
 
 	allowedTypes = [
 		chrome.storage.sync,
@@ -6,28 +6,19 @@ class SettingsBase
 		chrome.storage.managed 
 	]
 	
-	#these two lines need semicolons or Notepad++'s
-	#syntax highlighter has a stroke and dies.
-	#the CoffeeScript compiler doesn't give a flying fuck
-	#whether we use semicolons or not.
-	storage  = null;
-	defaults = null;
-	
-	constructor: ( store, defaultValues = null ) ->
+	constructor: ( store ) ->
 		if not ( store in allowedTypes )
 			throw new ArgumentException "Invalid storage location."
-
-		#using parentheses for the same reason as the semicolons.
-		#fuck Notepad++'s bullshit.
-		if( defaultValues == null )
-			throw new ArgumentException "Default values are required."
 		
-		storage  = store
-		defaults = defaultValues
-		
-		@verify ( valid ) ->
-			if not valid
-				@install()
+		@storage = store
+	
+	###
+		NOTE: for functions getValue(), getValues(), and getAll(),
+		explicit empty return statements are needed to prevent Coffee
+		from implicitly returning the last expression in scope when
+		compiling to JS. Not doing so will dick with all the callback
+		voodoo.
+	###
 
 	#Get a single value by name.
 	getValue: ( name, callback ) ->
@@ -37,17 +28,23 @@ class SettingsBase
 		if not isFunction callback
 			throw new AppException ""
 
-		storage.get name, ( x ) ->
+		@storage.get name, ( x ) ->
 			if not isUndefined chrome.runtime.lastError
 				throw new StorageException chrome.runtime.lastError.message
 			else
 				callback x
+				return
+		
+		return
 	
+	###
+		getValues is a variadic function with the signature: void getValues( string ..., function callback );
+	###
 	getValues: ->
 		if arguments.length < 2
 			throw new ArgumentException "Expected at least two arguments, got {0}".format arguments.length
 		
-		args = arguments.values()
+		args = arguments.values no;
 		
 		for arg in args.slice 0, -1
 			if not isString arg
@@ -59,75 +56,57 @@ class SettingsBase
 		if not isFunction callback
 			throw new ArgumentException "Expected last parameter to be a function, got {0}".format typeof callback
 		
-		storage.get names, ( x ) ->
+		@storage.get names, ( x ) ->
 			if not isUndefined chrome.runtime.lastError
 				throw new StorageException chrome.runtime.lastError.message
 			else
 				callback x
+				return
+		
+		return
 	
 	getAll: ( callback ) ->
 		if not isFunction callback
 			throw new ArgumentException "Expected parameter 1 to be a function, got {0}.".format typeof callback
 		
-		storage.get null, ( x ) ->
-			if not isUndefined chrome.runtime.lastError
-				throw new StorageException chrome.runtime.lastError
-			else
-				callback x
-	
-	update: ( data ) ->
-		if not isObject data
-			throw new ArgumentException "Expected parameter 1 to be an object, got {0}.".format typeof callback
-		
-		storage.set data, ( x ) ->
+		@storage.get null, ( x ) ->
 			if not isUndefined chrome.runtime.lastError
 				throw new StorageException chrome.runtime.lastError.message
-	
-	verify: ( callback ) ->
-		if not isFunction callback
-			throw new ArgumentException "Expected parameter 1 to be a function, got {0}.".format typeof callback
-			
-		@getAll ( x ) ->
-			if not ( Object.keys( x ).length is Object.keys( defaults ).length )
-				callback false; #*sigh* again
 			else
-				callback true; #yep
+				callback x
+				return
 		
-	install: ->
-		@update defaults
+		return
+	
+	update: ( data, callback ) ->
+		if not isObject data
+			throw new ArgumentException "Expected parameter 1 to be an object, got {0}.".format typeof data
+		
+		if not isFunction callback
+			throw new ArgumentException "Expected parameter 2 to a function, got {0}.".format typeof callback
+		
+		@storage.set data, ->
+			if not isUndefined chrome.runtime.lastError
+				throw new StorageException chrome.runtime.lastError.message
+				
+			callback()
+			return
+		
+		return
 
+###
 AppSettings = new (
 	class extends SettingsBase
-		
-		defaultSettings = {
-			firstRun: false,
-			platform: "PC",
-			updateInterval: 60,
-			notify: true,
-			alerts: {
-				showCreditOnly: true,
-				minimumCash: 5000,
-				showBlueprint: false,
-				showNightmare: false,
-				showResource:  ( false ) #Seriously, this is getting old
-			},
-			blueprints: [ ],
-			mods: [ ],
-			resources: [ ]
-		}
-	
 		constructor: ->
-			super chrome.storage.sync, defaultSettings				
+			super chrome.storage.sync			
 )
 
 LocalSettings = new (
 	class extends SettingsBase
-	
-		defaultSettings = {
-			alerts: [ ],
-			lastUpdate: ( null ) #it really is
-		}
-		
 		constructor: ->
-			super chrome.storage.local, defaultSettings
+			super chrome.storage.local
 )
+###
+
+AppSettings   = new Settings chrome.storage.sync
+LocalSettings = new Settings chrome.storage.local

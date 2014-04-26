@@ -1,7 +1,6 @@
-* Implement proper exception objects instead of just throwing strings.
-* Properly access `chrome.runtime.lastError.message` property when throwing.
 * Implement invasions.
 * Implement sounds.
 * Implement desktop notifications.
 * Add Images for blueprints (mod cards are a possibility as well).
-* Use console.warn() when logging exceptions.
+* Implement message passing to allow the background page to reload sync data when the settings page is updated.
+* Consider the possibility of extension-level throttling of the sync API to prevent errors.

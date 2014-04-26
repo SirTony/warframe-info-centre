@@ -7,6 +7,34 @@ isBoolean   = ( x ) -> typeof x is "boolean"
 
 now = -> new Date().getTime()
 
+httpGet = ( url, success ) ->
+	if not isString url
+		throw new ArgumentException "httpGet expects parameter 1 to be a string, {0} given.".format( typeof url )
+	
+	if not isFunction success
+		throw new ArgumentException "httpGet expects parameter 2 to be a function, {0} given.".format( typeof success )
+	
+	xmlHttp = new XMLHttpRequest()
+	xmlHttp.onreadystatechange = ->
+		if xmlHttp.readyState is 4 and xmlHttp.status is 200
+			success xmlHttp.responseText
+	
+	xmlHttp.open "GET", url, yes;
+	xmlHttp.send null;
+
+Object.prototype.selectKeys = ->
+	if arguments.length is 0
+		return @
+	
+	newObject = { }
+	args = arguments.values()
+	
+	for k, v of @
+		if k in args
+			newObject[k] = v
+	
+	return newObject
+
 Object.prototype.values = ( stripFunctions = true ) ->
 	ret = [ ]
 	
@@ -79,10 +107,13 @@ String.prototype.format = ->
 	
 	if formatters.length is  0
 		return @
-	
-	formatted = @
-	
+
+	#If the regex above only matches one thing, we get a string instead of an array.
+	if formatters.length is 1
+		return @.replace "{0}", arguments[0].toString()
+		
+	formatted = 0
 	for i in [ 0 .. formatters.length ]
-		formatted = formatted.replace "{" + formatters[i].toString() + "}", arguments[formatters[i]].toString()
+		formatted = formatted.replace "{" + formatters[i].toString() + "}", arguments[i].toString()
 	
 	return formatted

@@ -1,0 +1,5 @@
+#Ignore all JS files that are compiled from CS files.
+Scripts/Background.js
+Scripts/Lib/Settings.js
+Scripts/Lib/Exceptions.js
+Scripts/Lib/Extensions.js
