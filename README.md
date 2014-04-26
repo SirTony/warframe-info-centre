@@ -11,7 +11,7 @@ Warframe Info Centre (henceforth referred to as WIC) is only compatible with Goo
 Features
 ========
 
-* [✔] Automatic updating.
+* [**x**] Automatic updating.
 * [**x**] Desktop notifications.
 * [✔] Alerts support.
 * [**x**] Invasions support.
