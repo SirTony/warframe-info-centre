@@ -26,7 +26,7 @@ appDefaults = {
 }
 
 localDefaults = {
-    alerts: [ ],
+    alerts: { },
     lastUpdate: ( null )
 }
 
@@ -37,13 +37,26 @@ shouldUpdate = ->
 setup = ->
     console.trace "Setting up extension."
     
-    url = if app.platform is "PS4" then "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt" else "http://deathsnacks.com/wf/data/alerts_raw.txt"
+    url = if app.platform is "PS4" then \
+    "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt" \
+    else \
+    "http://deathsnacks.com/wf/data/alerts_raw.txt"
     
     if shouldUpdate()
         update()
     
-    setTimeout update, app.updateInterval * 1000
+    setTimeout update, ( app.updateInterval * 1000 ) - 100
     return
+
+policeOldAlerts = ->
+    for k, v of local.alerts
+        if not local.alerts.hasOWnProperty k
+            continue
+        
+        __now = now()
+        
+        if v.expireTime - __now <= 0
+            delete local.alerts[k]
 
 update = ->
     console.trace "Running updater."
@@ -57,10 +70,22 @@ update = ->
             console.trace( resp.length );
             
             if resp.length > 0
-                local.alerts = parseData resp
+                newAlerts = parseData resp
                 local.lastUpdate = now()
                 
+                currentKeys = local.alerts.keys()
+                newKeys = newAlerts.keys().filter ( x ) -> not ( x in currentKeys )
+                
+                if newKeys.length > 0
+                    chrome.browserAction.setBadgeText { text: newKeys.length.toString() }
+                
+                for k, v of newAlerts
+                    if newAlerts.hasOwnProperty k
+                        local.alerts[k] = v
+                
                 LocalSettings.update local, ->
+                    console.log "Updated local settings."
+                    
             return
         return
     else
@@ -97,8 +122,8 @@ parseData = ( text ) ->
                 high: parts[6]
             },
             
-            startTime: parseInt parts[7],
-            expireTime: parseInt parts[8],
+            startTime: parseInt( parts[7] ),
+            expireTime: parseInt( parts[8] ),
             
             rewards: {
                 credits: if creditPlus is yes then items[0] else parts[9],
@@ -161,11 +186,33 @@ loadConfig = ( reload ) ->
         return
     return
 
+__resetCheck = {
+    silent: no,
+    callCount: 1
+}
+
+clearData = ( quick = no ) ->
+    if( quick is yes and __resetCheck.silent is no )
+        __resetCheck.silent = yes;
+    
+    if __resetCheck.silent is yes or __resetCheck.callCount % 2 is 0
+        chrome.storage.local.clear()
+        chrome.storage.sync.clear()
+        console.log "Cleared."
+    else
+        console.warn "WARNING: clearData() is convenience function to aid in testing and debugging. " + \
+                     "It will wipe all userdata associated with Warframe Info Centre. " + \
+                     "If you would like to proceed, please call this function again, " + \
+                     "or call with clearData( true ); to silence this message."
+    
+    __resetCheck.callCount++
+    return
+
 try
     loadConfig no;
 catch e
     type = Exception.getType e
     if type is ( null )
-        throw e
+        console.error e.stack.toString()
     else
         console.error "{0}: {1}".format type, e.getMessage()

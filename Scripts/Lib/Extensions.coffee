@@ -5,7 +5,7 @@ isNumber    = ( x ) -> typeof x is "number"
 isUndefined = ( x ) -> typeof x is "undefined"
 isBoolean   = ( x ) -> typeof x is "boolean"
 
-now = -> new Date().getTime()
+now = -> Math.floor new Date().getTime() / 1000
 
 httpGet = ( url, success ) ->
 	if not isString url
@@ -108,12 +108,31 @@ String.prototype.format = ->
 	if formatters.length is  0
 		return @
 
-	#If the regex above only matches one thing, we get a string instead of an array.
 	if formatters.length is 1
 		return @.replace "{0}", arguments[0].toString()
 		
-	formatted = 0
-	for i in [ 0 .. formatters.length ]
-		formatted = formatted.replace "{" + formatters[i].toString() + "}", arguments[i].toString()
+	formatted = @
+	for i in [ 0 .. formatters.length - 1 ]
+		formatted = formatted.replace formatters[i], arguments[i].toString()
 	
 	return formatted
+
+timeSpan = ( secs ) ->
+	if not isNumber secs
+		throw new ArgumentException "timeSpan expects parameter 1 to be a number, {0} given.", typeof secs
+	
+	if secs < 60
+		return "{0}s".format secs
+	
+	mins = Math.floor secs / 60
+	
+	if mins < 60
+		return "{0}m {1}s".format( mins, secs % 60 )
+	
+	hours = Math.floor mins / 60
+	
+	if hours < 24
+		return "{0}h {1}m {2}s".format( hours, mins % 60, secs % 60 )
+	
+	#Days
+	return "{0}d {1}h {2}m {3}s".format( Math.floor( hours / 24 ), hours % 24, mins % 60, secs % 60 )
