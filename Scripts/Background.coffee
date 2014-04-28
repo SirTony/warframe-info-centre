@@ -45,7 +45,7 @@ setup = ->
     if shouldUpdate()
         update()
     
-    setTimeout update, ( app.updateInterval * 1000 ) - 100
+    setInterval update, ( app.updateInterval * 1000 ) - 100
     return
 
 policeOldAlerts = ->
