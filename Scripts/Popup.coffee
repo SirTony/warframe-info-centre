@@ -60,29 +60,35 @@ htmlFormat = {
 $( document ).ready ->
     chrome.browserAction.setBadgeText { text: "" }
     
-    value = 0
+    value = 360
     
+    $( "#alerts-expander" ).rotate value
     $( "#alerts-expander" ).rotate {
         bind: {
             click: ->
-                if value is 180
-                    value = 0
-                else if value is 0
-                    value = 180
-                else
-                    value = 0
-                
-                $( this ).rotate { animateTo: value, duration: 1250 }
-                
-                slideOpts = {
-                    duration: 500,
-                    queue: ( no )
-                }
-                
-                if value is 0
-                    $( "#alerts-container" ).slideDown( slideOpts );
-                else
-                    $( "#alerts-container" ).slideUp( slideOpts );
+                try
+                    if value is 180
+                        value = 360
+                    else if value is 360
+                        value = 180
+                    else
+                        value = 360
+                    
+                    $( @ ).rotate { animateTo: value, duration: 900 }
+                    
+                    slideOpts = {
+                        duration: 500,
+                        queue: ( no )
+                    }
+                    
+                    if value is 360
+                        $( "#alerts-container" ).slideDown slideOpts
+                        return
+                    else
+                        $( "#alerts-container" ).slideUp slideOpts
+                        return
+                catch e
+                    console.log e.stack
         }
     }
     

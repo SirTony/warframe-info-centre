@@ -2,7 +2,7 @@
 Scripts/Background.js
 Scripts/Lib/Settings.js
 Scripts/Lib/Exceptions.js
-Scripts/Lib/Extensions.js
+Scripts/Lib/Extensions*.js
 Scripts/Popup.js
 
 #Keep old stuff and stuff the developer uses for his own purposes out of the repo.
