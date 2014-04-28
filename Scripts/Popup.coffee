@@ -107,14 +107,14 @@ $( document ).ready ->
                 else
                     console.log "Expires: {1} ({2}); Now: {3} ({4}).".format v.expireTime, new Date( v.expireTime ), now(), new Date( now() * 1000 )
                     
-                isUrgent = diff <= 60
+                isUrgent = if diff <= 60 then " class=\"urgent\"" else ""
                 range = "Lv. {0}-{1}".format v.levelRange.low, v.levelRange.high
                 where = "{0} ({1})".format v.node, v.planet
                 
                 if v.rewards.extra.length > 0
-                    inner += htmlFormat.extraReward.format( k, ( if isUrgent then " class=\"urgent\"" else "" ), timeSpan( diff ), where, range, v.type, v.rewards.extra[0], v.message, v.rewards.credits ) 
+                    inner += htmlFormat.extraReward.format( k, isUrgent, timeSpan( diff ), where, range, v.type, v.rewards.extra[0], v.message, v.rewards.credits ) 
                 else
-                    inner += htmlFormat.creditOnly.format( k, ( if isUrgent then " class=\"urgent\"" else "" ), timeSpan( diff ), where, range, v.type, v.message, v.rewards.credits ) 
+                    inner += htmlFormat.creditOnly.format( k, isUrgent, timeSpan( diff ), where, range, v.type, v.message, v.rewards.credits ) 
             catch e
                 console.log e.stack.toString()
 

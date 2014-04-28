@@ -105,15 +105,17 @@ String.prototype.format = ->
 	
 	formatters = @.match( /(\{\d+\})/g )
 	
-	if formatters.length is  0
+	if( formatters is null or formatters.length is 0 )
 		return @
 
 	if formatters.length is 1
 		return @.replace "{0}", arguments[0].toString()
-		
+	
 	formatted = @
 	for i in [ 0 .. formatters.length - 1 ]
-		formatted = formatted.replace formatters[i], arguments[i].toString()
+		j = parseInt( formatters[i].replace( "{", "" ).replace( "}", "" ) )
+		_v = if not isUndefined( arguments[j] ) and not isUndefined( arguments[j].toString ) then arguments[j].toString() else arguments[j]
+		formatted = formatted.replace formatters[i], _v
 	
 	return formatted
 
