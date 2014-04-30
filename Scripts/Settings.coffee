@@ -56,25 +56,30 @@ save = ->
         #notify: $( "#show-notifications" ).is( ":checked" ),
         alerts: {
             showCreditOnly: $( "#money-alert" ).is( ":checked" ),
-            minimumCash: cash.between( 1, 99999 ) ? cash : 5000,
+            minimumCash: if cash.between( 1, 99999 ) then cash else 5000,
             showBlueprint: $( "#track-blueprints" ).is( ":checked" ),
             showNightmare: $( "#track-nightmare-mods" ).is( ":checked" ),
             showResource:  $( "#track-resources" ).is( ":checked" )
         },
         blueprints: getCheckedOf( blueprintIds ),
-        mods: getCheckedOf( mod ),
-        resources: getCheckedOf( mats )
+        mods: getCheckedOf( modIds ),
+        resources: getCheckedOf( resourceIds )
     }
     
     try
         AppSettings.update dict, ->
+            chrome.runtime.sendMessage { action: "UPDATE_SETTINGS", config: dict }, ( response ) ->
+                if response.status is ( yes )
+                    console.log "Updated settings."
+                else
+                    console.error "Update settings failed.\n" + response.message
+            alert "Settings saved successfully."
     catch e
         console.error e.getMessage()
         alert "Settings could not be updated. Please try again in a few moments."
 
 display = ->
     AppSettings.getAll ( config ) ->
-        console.log config
         $( "#platform-selector" ).val config.platform
         $( "#update-interval" ).val config.updateInterval
         #$( "#show-notifications" ).prop "checked", config.notify
@@ -84,15 +89,11 @@ display = ->
         $( "#track-nightmare-mods" ).prop "checked", config.alerts.showNightmare
         $( "#track-resources" ).prop "checked", config.alerts.showResource
         
-        __all = [ ]
-        __all.append config.blueprints
-        __all.append config.mods
-        __all.append config.resources
-        
-        console.log __all
+        __all = [].concat config.blueprints, config.mods, config.resources
         
         for x in __all
-            $( "#" + x ).prop "checked", (yes)
+            console.log x
+            $( "#" + x.ID ).prop "checked", (yes)
         
         if config.alerts.showBlueprint is (yes)
             $( "#blueprint-table" ).show()
@@ -100,17 +101,15 @@ display = ->
             $( "#blueprint-table" ).hide()
         
         if config.alerts.showNightmare is (yes)
-            $( "#mods-table" ).show()
+            $( "#mod-table" ).show()
         else
-            $( "#mods-table" ).hide()
+            $( "#mod-table" ).hide()
         
         if config.alerts.showResource is (yes)
             $( "#resource-table" ).show()
         else
             $( "#resource-table" ).hide()
         
-        return
-
 checkAllBlueprints = ( c ) ->
     for x in blueprintIds
         $( "#" + x ).prop "checked", c
@@ -154,4 +153,3 @@ $( document ).ready ->
 
     
     display()
-    return

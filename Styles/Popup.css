@@ -101,6 +101,11 @@ body
     padding: 2px 5px 3px 5px;
 }
 
+.future
+{
+	background-color: #818181 !important;
+}
+
 .urgent
 {
     background-color: #921212 !important;

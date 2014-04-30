@@ -34,8 +34,48 @@ shouldUpdate = ->
     console.trace "Checking update status."
     local.lastUpdate is null or now() - local.lastUpdate >= app.updateInterval
 
+policeOldAlerts = ->
+    for k, v of local.alerts
+        if not local.alerts.hasOwnProperty k
+            continue
+        
+        __now = now()
+        
+        if v.expireTime - __now <= -120
+            delete local.alerts[k]
+    
+    LocalSettings.update local, ->
+        console.log "Removed some alerts."
+    
+    return
+
 setup = ->
     console.trace "Setting up extension."
+    
+    chrome.runtime.onMessage.addListener ( message, sender, reply ) ->
+        console.log sender
+        
+        switch message.action
+            when "UPDATE_SETTINGS"
+                AppSettings.getAll ( dict ) ->
+                    app = dict
+                    console.log app
+                    local.alerts = { }
+                    
+                    LocalSettings.update local, ->
+                        reply { status: yes }
+                        
+                        url = if app.platform is "PS4" then \
+                        "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt" \
+                        else \
+                        "http://deathsnacks.com/wf/data/alerts_raw.txt"
+                        
+                        update yes;
+                        return
+                    return
+            else
+                reply { status: no, message: "Unrecognised action '{0}'.".format message.action }
+        return
     
     url = if app.platform is "PS4" then \
     "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt" \
@@ -46,22 +86,13 @@ setup = ->
         update()
     
     setInterval update, ( app.updateInterval * 1000 ) - 100
+    setInterval policeOldAlerts, 30000 #Remove every 30 seconds.
     return
 
-policeOldAlerts = ->
-    for k, v of local.alerts
-        if not local.alerts.hasOWnProperty k
-            continue
-        
-        __now = now()
-        
-        if v.expireTime - __now <= 0
-            delete local.alerts[k]
-
-update = ->
+update = ( force = no )->
     console.trace "Running updater."
     
-    if shouldUpdate()
+    if force is yes or shouldUpdate()
         console.trace "Updating."
         
         httpGet url, ( resp ) ->
