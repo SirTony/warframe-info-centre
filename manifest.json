@@ -13,7 +13,7 @@
     
     "icons": {
         "16":  "Icons/Warframe.Tiny.png",
-        "48":  "icons/Warframe.Medium.png",
+        "48":  "Icons/Warframe.Medium.png",
         "128": "Icons/Warframe.Large.png"
     },
     
@@ -38,6 +38,5 @@
     "permissions": [
         "http://deathsnacks.com/wf/*",
         "storage",
-        "notifications"
     ]
 }
