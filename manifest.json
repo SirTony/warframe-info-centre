@@ -37,6 +37,6 @@
     
     "permissions": [
         "http://deathsnacks.com/wf/*",
-        "storage",
+        "storage"
     ]
 }
