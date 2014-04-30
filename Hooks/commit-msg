@@ -8,12 +8,7 @@ preg_match( "~\"version\"\:\s*\"([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)\",~im", $
 list( $major, $minor, $build, $revision ) = array_slice( array_map( function( $x ) { return intval( $x ); }, $m ), 1 );
 $matched = $m[0];
 
-$branch = substr( trim( exec( "git branch" ) ), 2 );
-
-if( $branch == "master" )
-    ++$revision;
-elseif( $branch == "stable" )
-    ++$build;
+++$revision;
 
 $version = implode( ".", array_map( function( $x ) { return strval( $x ); }, [ $major, $minor, $build, $revision ] ) );
 $version = sprintf( "\"version\": \"%s\",", $version );

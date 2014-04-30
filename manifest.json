@@ -5,11 +5,12 @@
     
     "name":        "Warframe Info Centre",
     "description": "This extension keeps you updated with the latest alerts and invasions in Warframe.",
-    "version": "0.2.2.47",
+    "version": "0.2.2.49",
     "author":      "Tony M. (/u/SirNastyPants)",
     
     "offline_enabled":        false,
     "minimum_chrome_version": "22",
+    "update_url": "https://github.com/Syke94/warframe-info-centre/blob/update/update.xml",
     
     "icons": {
         "16":  "Icons/Warframe.Tiny.png",
