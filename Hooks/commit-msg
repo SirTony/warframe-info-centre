@@ -2,6 +2,10 @@
 <?php
 
 //REQUIRES PHP 5.4.x!
+$branch = substr( trim( exec( "git branch" ) ), 2 );
+
+if( $branch == "update" )
+	die( 0 );
 
 $c = file_get_contents( "manifest.json" );
 preg_match( "~\"version\"\:\s*\"([0-9]+)\.([0-9]+)\.([0-9]+)\.([0-9]+)\",~im", $c, $m );

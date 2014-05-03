@@ -83,43 +83,68 @@ tracker = ->
             delete tracked[k]
         else
             $( "#alerts-table-{0} .time-left".format k ).html( makeTimeElement( v.start, v.expire ) )
-    
+        
+        if $( "#alerts-container" ).cildren().length is 0
+            $( "#alerts-container" ).html htmlFormat.noAlerts
+        
     return
 
 $( document ).ready ->
     chrome.browserAction.setBadgeText { text: "" }
     
-    value = 360
+    alertsValue = 360 #invasionsValue = 360
     
-    $( "#alerts-expander" ).rotate value
+    $( "#alerts-expander" ).rotate alertsValue
+    #$( "#invasions-expander" ).rotate invasionsValue
+    
+    slideOpts = {
+        duration: 500,
+        queue: ( no )
+    }
+    
     $( "#alerts-expander" ).rotate {
         bind: {
             click: ->
-                try
-                    if value is 180
-                        value = 360
-                    else if value is 360
-                        value = 180
-                    else
-                        value = 360
-                    
-                    $( @ ).rotate { animateTo: value, duration: 900 }
-                    
-                    slideOpts = {
-                        duration: 500,
-                        queue: ( no )
-                    }
-                    
-                    if value is 360
-                        $( "#alerts-container" ).slideDown slideOpts
-                        return
-                    else
-                        $( "#alerts-container" ).slideUp slideOpts
-                        return
-                catch e
-                    console.log e.stack
+                if alertsValue is 180
+                    alertsValue = 360
+                else if alertsValue is 360
+                    alertsValue = 180
+                else
+                    alertsValue = 360
+                
+                $( @ ).rotate { animateTo: alertsValue, duration: 900 }
+                
+                if alertsValue is 360
+                    $( "#alerts-container" ).slideDown slideOpts
+                    return
+                else
+                    $( "#alerts-container" ).slideUp slideOpts
+                    return
         }
     }
+    
+    ###
+    $( "#invasions-expander" ).rotate {
+        bind: {
+            click: ->
+                if invasionsValue is 180
+                    invasionsValue = 360
+                else if invasionsValue is 360
+                    invasionsValue = 180
+                else
+                    invasionsValue = 360
+                
+                $( @ ).rotate { animateTo: invasionsValue, duration: 900 }
+                
+                if invasionsValue is 360
+                    $( "#invasions-container" ).slideDown slideOpts
+                    return
+                else
+                    $( "#invasions-container" ).slideUp slideOpts
+                    return
+        }
+    }
+    ###
     
     LocalSettings.getAll ( x ) ->
         inner = ""
