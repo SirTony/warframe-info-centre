@@ -3,7 +3,7 @@
 
     <head>
         <title>Warframe Info Centre</title>
-        <meta http-equiv="content-type" ontent="text/html;charset=utf-8" />
+        <meta http-equiv="content-type" content="text/html;charset=utf-8" />
         <script type="text/javascript" src="Scripts/Lib/jQuery.min.js"></script>
         <script type="text/javascript" src="Scripts/Lib/Exceptions.js"></script>
         <script type="text/javascript" src="Scripts/Lib/Extensions.compat.js"></script>
@@ -34,17 +34,37 @@
                     <input id="update-interval" type="number" min="60" max="500" value="60" />
                 </td>
             </tr>
-            <!-- unimplemented settings -->
-            <!--<tr class="section">
+            <tr class="section">
                 <td><input type="checkbox" id="play-sound">Play sound.</input></td>
-                <td>
-                    <label for="soundfile">Choose sound:</label>
+                <!--<td id="user-sound-cell" style="display: none;">
+                    <label for="soundfile">Sound:</label>
                     <input type="file" id="soundfile" />
+                    <span class="cancel-btn" id="cancel-upload"></span>
+                </td>-->
+                <td id="default-sounds-cell">
+                    <select id="default-sounds">
+                        <option value="Alarm.mp3">Alarm</option>
+                        <option value="Cipher Fail.mp3">Cipher Fail</option>
+                        <option value="Ding.mp3">Ding</option>
+                        <option value="Energy Pickup.mp3">Energy Pickup</option>
+                        <option value="Incoming Transmission.mp3">Incoming Transmission</option>
+                        <option selected="selected" value="It Is Time Tenno.mp3">It's time, Tenno</option>
+                        <option value="Single Drum Hit.mp3">Drum Hit</option>
+                        <option value="Somethings Happening Tenno.mp3">Something's happening, Tenno</option>
+                        <option value="Tenno You Are Needed.mp3">Tenno, you are needed</option>
+                        <option value="Transmission Recieved.mp3">Transmission Received</option>
+                        <option value="Wake Up Tenno.mp3">Wake up, Tenno</option>
+                        <!--<option value="user-defined">&lt;Custom&gt;</option>-->
+                    </select>
+                    <audio id="audio-preview" style="display: none;">
+                        <source type="audio/mp3" id="mp3-source" />
+                    </audio>
+                    <button id="do-play-sound">Preview</button>
                 </td>
             </tr>
             <tr class="section">
                 <td><input type="checkbox" id="show-notifications">Show notifications.</input></td>
-            </tr>-->
+            </tr>
             <tr>
                 <th class="section-header" colspan="2">Alerts</th>
             </tr>
@@ -65,7 +85,7 @@
         </table>
         <table class="options-table" id="blueprint-table" cellpadding="0" cellspacing="3">
             <tr>
-                <th class="section-header" colspan="2">Blueprints - <span class="smaller"><a href="javascript:void0" id="bp-check-all">Check</a>/<a href="javascript:void0" id="bp-uncheck-all">Uncheck</a> All<span></th>
+                <th class="section-header" colspan="2">Blueprints - <span class="smaller"><a href="javascript:void0" id="bp-check-all">Check</a>/<a href="javascript:void0" id="bp-uncheck-all">Uncheck</a> All</span></th>
             </tr>
             <tr class="section">
                 <td><input type="checkbox" id="silver-potato-bp" value="Orokin Catalyst Blueprint">Orokin Catalyst Blueprint</input></td>
@@ -174,7 +194,7 @@
         </table>
         <table class="options-table" id="mod-table" cellpadding="0" cellspacing="3">
             <tr>
-                <th class="section-header" colspan="2">Nightmare Mods - <span class="smaller"><a href="javascript:void0" id="mod-check-all">Check</a>/<a href="javascript:void0" id="mod-uncheck-all">Uncheck</a> All<span></th>
+                <th class="section-header" colspan="2">Nightmare Mods - <span class="smaller"><a href="javascript:void0" id="mod-check-all">Check</a>/<a href="javascript:void0" id="mod-uncheck-all">Uncheck</a> All</span></th>
             </tr>
             <tr class="section">
                 <td><input type="checkbox" id="constitution-mod" value="Constitution">Constitution</input></td>
@@ -206,7 +226,7 @@
         </table>
         <table class="options-table" id="resource-table" cellpadding="0" cellspacing="3">
             <tr>
-                <th class="section-header" colspan="2">Resources - <span class="smaller"><a href="javascript:void0" id="mats-check-all">Check</a>/<a href="javascript:void0" id="mats-uncheck-all">Uncheck</a> All<span></th>
+                <th class="section-header" colspan="2">Resources - <span class="smaller"><a href="javascript:void0" id="mats-check-all">Check</a>/<a href="javascript:void0" id="mats-uncheck-all">Uncheck</a> All</span></th>
             </tr>
             <tr class="section">
                 <td><input type="checkbox" id="morphics-mat" value="Morphics" value="Morphics">Morphics</input></td>

@@ -1,17 +1,16 @@
 app   = null
 local = null
+sound = null
+newAlertsCount = 0
+
+DEBUG = on
 
 appDefaults = {
     platform: "PC",
     updateInterval: 60,
-    
-    #These following 3 settings exist for forward-compatibility,
-    #and are not actually implemented in the code at all.
     notify: yes,
     playSound: no,
-    customSound: null,
-    # /end
-    
+    soundFile: chrome.extension.getURL( "/Audio/It%20Is%20Time%20Tenno.mp3" ),
     alerts: {
         showCreditOnly: yes,
         minimumCash: 5000,
@@ -50,16 +49,26 @@ policeOldAlerts = ->
 
 setup = ->
     console.trace "Setting up extension."
-    
+
+    console.log app.soundFile
+    sound = new Audio app.soundFile
+
     chrome.runtime.onMessage.addListener ( message, sender, reply ) ->
-        console.log sender
-        
+        if not DEBUG and not ( sender.id is "khlkgkdlljlbgpjflpjampkadjnldfec" )
+            console.error "Unregocnized sender: {0}".format sender.id
+            return
+
         switch message.action
             when "UPDATE_SETTINGS"
                 AppSettings.getAll ( dict ) ->
-                    app = dict
                     console.log app
-                    local.alerts = { }
+
+                    if not ( dict.platform is app.platform )
+                        local.alerts = { }
+                        newAlertsCount = 0
+                        
+                    app = dict
+                    sound = new Audio app.soundFile
                     
                     LocalSettings.update local, ->
                         reply { status: yes }
@@ -67,9 +76,13 @@ setup = ->
                         update yes
                         return
                     return
+            when "RESET_ALERTS_COUNTER"
+                newAlertsCount = 0
+                reply { status: yes }
             else
-                reply { status: no, message: "Unrecognised action '{0}'.".format message.action }
+                reply { action: message.action, status: no, message: "Unrecognised action '{0}'.".format message.action }
         return
+
     if shouldUpdate()
         update()
     
@@ -91,9 +104,13 @@ update = ( force = no )->
                 
             currentKeys = local.alerts.keys()
             newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
+            newAlertsCount += newKeys.length
                 
-            if newKeys.length > 0
-                chrome.browserAction.setBadgeText { text: newKeys.length.toString() }
+            if newAlertsCount > 0
+                chrome.browserAction.setBadgeText { text: newAlertsCount.toString() }
+
+                if app.playSound
+                    sound.play()
                 
             for k, v of dict
                 if dict.hasOwnProperty k
@@ -130,12 +147,12 @@ loadConfig = ( reload ) ->
     AppSettings.getAll ( appRes ) ->
         if isUndefined( appRes ) or appRes is null or not ( appRes.keys().length is appDefaults.keys().length )
             AppSettings.update appDefaults, ->
-                AppSettings.getValues "platform", "updateInterval", ( appRes2 ) ->
+                AppSettings.getAll ( appRes2 ) ->
                     app = appRes2
                     return
                 return
         else
-            app = appRes.selectKeys "platform", "updateInterval"
+            app = appRes
         
         LocalSettings.getAll ( locRes ) ->
             if isUndefined( locRes ) or locRes is null or not ( locRes.keys().length is localDefaults.keys().length )
@@ -143,14 +160,14 @@ loadConfig = ( reload ) ->
                     LocalSettings.getAll ( locRes2 ) ->
                         local = locRes2
                     
-                        if( reload is no )
+                        if reload is no
                             setup()
                             return
                     return
             else
                 local = locRes
                 
-                if( reload is no )
+                if reload is no
                     setup()
             
             return
@@ -163,7 +180,7 @@ __resetCheck = {
 }
 
 clearData = ( quick = no ) ->
-    if( quick is yes and __resetCheck.silent is no )
+    if quick is yes and __resetCheck.silent is no
         __resetCheck.silent = yes;
     
     if __resetCheck.silent is yes or __resetCheck.callCount % 2 is 0
@@ -180,10 +197,10 @@ clearData = ( quick = no ) ->
     return
 
 try
-    loadConfig no;
+    loadConfig no
 catch e
     type = Exception.getType e
-    if type is ( null )
+    if type is null
         console.error e.stack.toString()
     else
         console.error "{0}: {1}".format type, e.getMessage()

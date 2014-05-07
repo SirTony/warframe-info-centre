@@ -53,7 +53,9 @@ save = ->
     dict = {
         platform: $( "#platform-selector" ).val(),
         updateInterval: if interval.between( 60, 500 ) then interval else 60,
-        #notify: $( "#show-notifications" ).is( ":checked" ),
+        notify: $( "#show-notifications" ).is( ":checked" ),
+        playSound: $( "#play-sound" ).is( ":checked" ),
+        soundFile: $( "#mp3-source" ).prop( "src" ),
         alerts: {
             showCreditOnly: $( "#money-alert" ).is( ":checked" ),
             minimumCash: if cash.between( 1, 99999 ) then cash else 5000,
@@ -82,7 +84,8 @@ display = ->
     AppSettings.getAll ( config ) ->
         $( "#platform-selector" ).val config.platform
         $( "#update-interval" ).val config.updateInterval
-        #$( "#show-notifications" ).prop "checked", config.notify
+        $( "#show-notifications" ).prop "checked", config.notify
+        $( "#play-sound" ).prop "checked", config.playSound
         $( "#money-alert" ).prop "checked", config.alerts.showCreditOnly
         $( "#money-amount" ).val config.alerts.minimumCash
         $( "#track-blueprints" ).prop "checked", config.alerts.showBlueprint
@@ -109,6 +112,14 @@ display = ->
             $( "#resource-table" ).show()
         else
             $( "#resource-table" ).hide()
+
+        $( "#mp3-source" ).attr( "src", config.soundFile ).detach().appendTo "#audio-preview"
+        
+        if config.soundFile.indexOf( "chrome-extension://" ) is 0 #Default MP3
+            fileName = config.soundFile.split( "/" ).slice( -1 ).pop()
+            $( "#default-sounds" ).val decodeURIComponent fileName
+        else
+            $( "#default-sounds" ).val "user-defined"
         
 checkAllBlueprints = ( c ) ->
     for x in blueprintIds
@@ -151,5 +162,31 @@ $( document ).ready ->
         else
             $( "#resource-table" ).hide()
 
-    
+    $( "#default-sounds" ).change ->
+        if $( "#default-sounds :selected" ).val() is "user-defined"
+            $( "#default-sounds-cell" ).hide()
+            $( "#user-sound-cell" ).show()
+
+    $( "#soundfile" ).change ->
+        file = document.getElementById( "soundfile" ).files[0]
+        
+        if not ( file.type is "audio/mp3" )
+            alert "Warframe Info Centre only accepts MP3 audio files."
+            $( "#soundfile" ).replaceWith( $( "#soundfile" ).clone true )
+
+    $( "#cancel-upload" ).click ->
+        $( "#user-sound-cell" ).hide()
+        $( "#default-sounds-cell" ).show()
+
+    $( "#do-play-sound" ).click ->
+        option = $( "#default-sounds :selected" ).val()
+
+        if option is "user-defined"
+            return
+
+        option = encodeURIComponent option
+        path = chrome.extension.getURL "/Audio/#{option}"
+        $( "#mp3-source" ).attr( "src", path ).detach().appendTo "#audio-preview"
+        document.getElementById( "audio-preview" ).play()
+
     display()

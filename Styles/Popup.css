@@ -253,3 +253,20 @@ a img
 	margin-right: 2px;
 	margin-top: 2px;
 }
+
+.group hr
+{
+    height: 0px;
+    width: 100%;
+    border: none;
+    border-top: 1px solid #0A0F17;
+    border-bottom: 1px solid #192230;
+}
+
+.lotus
+{
+    z-index: -9999;
+    position: absolute;
+    right: -39px;
+    bottom: -72px;
+}
