@@ -1,6 +1,5 @@
-app   = null;
-local = null;
-url   = null;
+app   = null
+local = null
 
 appDefaults = {
     platform: "PC",
@@ -18,7 +17,7 @@ appDefaults = {
         minimumCash: 5000,
         showBlueprint: no,
         showNightmare: no,
-        showResource:  ( no )
+        showResource: no
     },
     blueprints: [ ],
     mods: [ ],
@@ -27,12 +26,12 @@ appDefaults = {
 
 localDefaults = {
     alerts: { },
-    lastUpdate: ( null )
+    lastUpdate: null
 }
 
 shouldUpdate = ->
     console.trace "Checking update status."
-    local.lastUpdate is null or now() - local.lastUpdate >= app.updateInterval
+    return local.lastUpdate is null or now() - local.lastUpdate >= app.updateInterval
 
 policeOldAlerts = ->
     for k, v of local.alerts
@@ -64,24 +63,13 @@ setup = ->
                     
                     LocalSettings.update local, ->
                         reply { status: yes }
-                        
-                        url = if app.platform is "PS4" then \
-                        "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt" \
-                        else \
-                        "http://deathsnacks.com/wf/data/alerts_raw.txt"
-                        
-                        update yes;
+                        Api.platform = app.platform
+                        update yes
                         return
                     return
             else
                 reply { status: no, message: "Unrecognised action '{0}'.".format message.action }
         return
-    
-    url = if app.platform is "PS4" then \
-    "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt" \
-    else \
-    "http://deathsnacks.com/wf/data/alerts_raw.txt"
-    
     if shouldUpdate()
         update()
     
@@ -95,78 +83,30 @@ update = ( force = no )->
     if force is yes or shouldUpdate()
         console.trace "Updating."
         
-        httpGet url, ( resp ) ->
-            console.trace( "Fetched data." );
-            console.trace( resp );
-            console.trace( resp.length );
+        Api.getAlerts ( dict ) ->
+            console.log( "Fetched data." );
+            console.log( dict );
             
-            if resp.length > 0
-                newAlerts = parseData resp
-                local.lastUpdate = now()
+            local.lastUpdate = now()
                 
-                currentKeys = local.alerts.keys()
-                newKeys = newAlerts.keys().filter ( x ) -> not ( x in currentKeys )
+            currentKeys = local.alerts.keys()
+            newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
                 
-                if newKeys.length > 0
-                    chrome.browserAction.setBadgeText { text: newKeys.length.toString() }
+            if newKeys.length > 0
+                chrome.browserAction.setBadgeText { text: newKeys.length.toString() }
                 
-                for k, v of newAlerts
-                    if newAlerts.hasOwnProperty k
-                        local.alerts[k] = v
+            for k, v of dict
+                if dict.hasOwnProperty k
+                    local.alerts[k] = v
                 
-                LocalSettings.update local, ->
-                    console.log "Updated local settings."
+            LocalSettings.update local, ->
+                console.log "Updated local settings."
                     
             return
         return
     else
         console.trace "No need to update."
     return
-
-parseData = ( text ) ->
-    console.trace "Parsing alerts data."
-    
-    lines = text.split "\n"
-    
-    if lines.length < 2
-        return null;
-    
-    alerts = { }
-    
-    for line in lines
-        parts = line.split "|"
-        
-        if parts.length < 10
-            continue
-        
-        creditPlus = not ( parts[9].indexOf( "-" ) is -1 )
-        items      = parts[9].split " - "
-        
-        obj = {
-            planet: parts[2],
-            node: parts[1],
-            type: parts[3],
-            faction: parts[4],
-            
-            levelRange: {
-                low: parts[5],
-                high: parts[6]
-            },
-            
-            startTime: parseInt( parts[7] ),
-            expireTime: parseInt( parts[8] ),
-            
-            rewards: {
-                credits: if creditPlus is yes then items[0] else parts[9],
-                extra:   if creditPlus is yes then items.slice 1 else [ ]
-            }
-            
-            message: parts[10]
-        }
-        
-        alerts[parts[0]] = obj
-    
-    return alerts
 
 ###
     The reload param is for telling the function whether or not

@@ -7,22 +7,11 @@ isBoolean   = ( x ) -> typeof x is "boolean"
 
 now = -> Math.floor new Date().getTime() / 1000
 
-httpGet = ( url, success ) ->
-	if not isString url
-		throw new ArgumentException "httpGet expects parameter 1 to be a string, {0} given.".format( typeof url )
-	
-	if not isFunction success
-		throw new ArgumentException "httpGet expects parameter 2 to be a function, {0} given.".format( typeof success )
-	
-	xmlHttp = new XMLHttpRequest()
-	xmlHttp.onreadystatechange = ->
-		if xmlHttp.readyState is 4 and xmlHttp.status is 200
-			success xmlHttp.responseText
-	
-	xmlHttp.open "GET", url, yes;
-	xmlHttp.send null;
+Function::property = ( prop, fn, isStatic = no ) ->
+	target = if isStatic then @ else @::
+	Object.defineProperty target, prop, fn
 
-Array.prototype.map = ( fn ) ->
+Array::map = ( fn ) ->
 	if not isFunction fn
 		throw new ArgumentException "Array.map expects parameter 1 to be a function, {0} given.".format( typeof fn )
 	
@@ -33,7 +22,7 @@ Array.prototype.map = ( fn ) ->
 	
 	return mapped
 
-Array.prototype.filter = ( fn ) ->
+Array::filter = ( fn ) ->
 	if not isFunction fn
 		throw new ArgumentException "Array.filter expects parameter 1 to be a function, {0} given.".format( typeof predicate )
 	
@@ -45,7 +34,7 @@ Array.prototype.filter = ( fn ) ->
 	
 	return filtered
 
-Array.prototype.all = ( fn ) ->
+Array::all = ( fn ) ->
 	if not isFunction fn
 		throw new ArgumentException "Array.filter expects parameter 1 to be a function, {0} given.".format( typeof predicate )
 	
@@ -55,7 +44,7 @@ Array.prototype.all = ( fn ) ->
 	
 	return yes;
 
-Number.prototype.between = ( lo, hi, inclusive = yes ) ->
+Number::between = ( lo, hi, inclusive = yes ) ->
 	if not isNumber lo
 		throw new ArgumentException "Number.between expects parameter 1 to be a number, {0} given.".format( typeof lo )
 	
@@ -64,7 +53,7 @@ Number.prototype.between = ( lo, hi, inclusive = yes ) ->
 	
 	return if inclusive is yes then @ >= lo and @ <= hi else @ > lo and @ < hi
 
-String.prototype.format = ->
+String::format = ->
 	if arguments.length is 0
 		return @
 	

@@ -1,4 +1,4 @@
-Object.prototype.selectKeys = ->
+Object::selectKeys = ->
 	if arguments.length is 0
 		return @
 	
@@ -11,7 +11,7 @@ Object.prototype.selectKeys = ->
 	
 	return newObject
 
-Object.prototype.values = ( stripFunctions = true ) ->
+Object::values = ( stripFunctions = true ) ->
 	ret = [ ]
 	
 	for k, v of @
@@ -22,7 +22,7 @@ Object.prototype.values = ( stripFunctions = true ) ->
 	
 	return ret
 
-Object.prototype.keys = ->
+Object::keys = ->
 	ret = [ ]
 	
 	for k, v of @

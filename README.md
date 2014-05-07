@@ -1,4 +1,4 @@
-![Logo](https://raw.githubusercontent.com/Syke94/warframe-info-centre/master/Icons/Warframe.Medium.png) Warframe Info Centre
+![Logo](https://raw.githubusercontent.com/Syke94/warframe-info-centre/dev/Icons/Warframe.Medium.png) Warframe Info Centre
 ====================
 
 A Google Chrome extension for keeping up to date on the latest alerts and invasions.

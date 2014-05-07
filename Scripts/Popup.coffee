@@ -76,15 +76,13 @@ tracker = ->
         if not tracked.hasOwnProperty k
             continue
         
-        console.log "Updating {0}".format k
-        
         if v.expire - now() <= -120
             $( "#alerts-table-{0}".format k ).remove()
             delete tracked[k]
         else
             $( "#alerts-table-{0} .time-left".format k ).html( makeTimeElement( v.start, v.expire ) )
         
-        if $( "#alerts-container" ).cildren().length is 0
+        if $( "#alerts-container" ).children().length is 0
             $( "#alerts-container" ).html htmlFormat.noAlerts
         
     return
