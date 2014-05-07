@@ -36,5 +36,6 @@ Want to contribute? Don't be shy about [forking](https://github.com/Syke94/warfr
 Contributors
 ============
 
-* [Tony Montana](https://github.com/Syke94) - *Developer*
+* [Tony Montana](https://github.com/Syke94) - *Developer, Design*
 * [Deathmax](http://deathmax.com/) - *API provider*
+* [Kuenaimaku](https://github.com/Kuenaimaku) - *Design*
