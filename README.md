@@ -31,7 +31,7 @@ WIC is primarily written in CoffeeScript, which has to be compiled to JavaScript
 Contributing
 ============
 
-Want to contribute? Don't be shy about [forking](https://github.com/Syke94/warframe-info-centre/fork) and sending pull requests, or [send me an email](mailto:js.pwns@gmail.com) about getting write access to the main repo.
+Want to contribute? Check out the [Contributing](https://github.com/Syke94/warframe-info-centre/wiki/Contributing) page on the wiki for details.
 
 Contributors
 ============
