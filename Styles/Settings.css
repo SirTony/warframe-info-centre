@@ -1,9 +1,7 @@
 body
 {
     background: url('../Images/App/Background.png') repeat;
-	background-color:#131923;
     color: #676F7A;
-    font-family: "Trebuchet MS", Verdana, Arial;
 }
 
 #noty
@@ -70,25 +68,27 @@ input[type=file]
 {
     margin-left: auto;
     margin-right: auto;
-    min-width:600px;
-	font-size:12px;
+    min-width: 600px;
+    font-size: 12px;
 }
 
 .section-header
 {
-	color:#5B7396;
+    color: #5B7396;
     font-size: 18px;
     text-align: center;
     padding-top: 13px;
     padding-bottom: 13px;
 }
 
-.section-header a{
-	color:#5B7396;
+.section-header a
+{
+    color: #5B7396;
 }
 
-.section-header a:hover{
-	text-decoration:underline;
+.section-header a:hover
+{
+    text-decoration: underline;
 }
 
 .main-header
@@ -97,10 +97,10 @@ input[type=file]
     border-bottom: 1px solid #D0D0D0;
     padding-top: 0;
     padding-bottom: 0;
-	-webkit-border-image: url('../Images/App/Separator.png') 30 30 round;
-	border-top: 0px solid #FFF;
-	border-right: 0px solid #FFF;
-	border-left: 0px solid #FFF;
+    -webkit-border-image: url('../Images/App/Separator.png') 30 30 round;
+    border-top: 0px solid #FFF;
+    border-right: 0px solid #FFF;
+    border-left: 0px solid #FFF;
 
 }
 
@@ -115,66 +115,74 @@ input[type=file]
     text-align: center;
 }
 
-select {
-	-webkit-appearance: menulist-text;
-	font-family: "Trebuchet MS", Verdana, Arial;
-	background: 
-		url('../Images/App/arrow-down.png') center right no-repeat, 
-		RGBA(255,255,255,.1);
-	color: #676F7A;
-	height: 22px;
-	line-height: 18px;
-	outline:none;
+select
+{
+    -webkit-appearance: menulist-text;
+    /*font-family: "Trebuchet MS", Verdana, Arial;*/
+    background: 
+        url('../Images/App/arrow-down.png') center right no-repeat, 
+        RGBA(255,255,255,.1);
+    color: #676F7A;
+    height: 22px;
+    line-height: 18px;
+    outline: none;
 }
-input{
-	outline:none;
+
+input
+{
+    outline: none;
 }
-input[type=number]{
-	font-family: "Trebuchet MS", Verdana, Arial;
-	background: RGBA(255,255,255,.1);
-	color: #676F7A;
-	height: 22px;
-	line-height: 18px;
-	border:0px solid;
-	padding: 0px 5px 0px 5px;
-	outline:none;
+
+input[type=number]
+{
+    /*font-family: "Trebuchet MS", Verdana, Arial;*/
+    background: RGBA(255,255,255,.1);
+    color: #676F7A;
+    height: 22px;
+    line-height: 18px;
+    border: 0px solid;
+    padding: 0px 5px 0px 5px;
+    outline: none;
 }
-input[type="checkbox"] {
-    display:none;
+
+input[type="checkbox"]
+{
+    display: none;
 }
-input[type="checkbox"] + label span {
-    display:inline-block;
-    width:13px;
-    height:13px;
-    margin:-1px 4px 0 0;
-    vertical-align:middle;
-    background:url('../Images/App/checkbox.png') left top no-repeat;
-    cursor:pointer;
+input[type="checkbox"] + label span
+{
+    display: inline-block;
+    width: 13px;
+    height: 13px;
+    margin: -1px 4px 0 0;
+    vertical-align: middle;
+    background: url('../Images/App/checkbox.png') left top no-repeat;
+    cursor: pointer;
 }
 input[type="checkbox"]:checked + label span {
-    background:url('../Images/App/checkbox.png') -14px top no-repeat;
+    background: url('../Images/App/checkbox.png') -14px top no-repeat;
 }
 
 button{
-	font-family: "Trebuchet MS", Verdana, Arial;
-	background: RGBA(255,255,255,.1);
-	color: #676F7A;
-	height: 22px;
-	line-height: 18px;
-	border:0px solid;
-	padding: 0px 5px 0px 5px;
-	cursor:pointer;
-	outline:none;
+    font-family: "Trebuchet MS", Verdana, Arial;
+    background: RGBA(255,255,255,.1);
+    color: #676F7A;
+    height: 22px;
+    line-height: 18px;
+    border: 0px solid;
+    padding: 0px 5px 0px 5px;
+    cursor: pointer;
+    outline: none;
 }
 
 button:hover{
-	background: RGBA(255,255,255,.2);
+    background: RGBA(255,255,255,.2);
 }
 
 button:active{
-	background: RGBA(0,0,0,.1);
+    background: RGBA(0,0,0,.1);
 }
 
 button:focus, select:focus, input:focus{
-	box-shadow: 0px 0px 5px 0px #5B7396;
+    box-shadow: 0px 0px 5px 0px #5B7396;
 }

@@ -1,11 +1,3 @@
-@font-face
-{
-	font-family: 'Ubuntu';
-	font-style: normal;
-	font-weight: 400;
-	src: local( 'Ubuntu' ), url( '../Fonts/Ubuntu-R.ttf' );
-}
-
 html
 {
     width:  625px;
@@ -14,8 +6,6 @@ html
 
 body
 {
-    background: url( '../Images/App/Background.png' );
-    font-family: Ubuntu, "Trebuchet MS", Verdana, Arial;
     color: #5B7396;
 }
 
@@ -59,8 +49,8 @@ body
     width: 100%;
     margin-top: 7px;
     margin-bottom: 9px;
-	padding-left: 2%;
-	padding-right: 2%;
+    padding-left: 2%;
+    padding-right: 2%;
 }
 
 #alerts-container > td, th, tr
@@ -77,8 +67,8 @@ body
 
 .ai-conflict em
 {
-	font-size: 11.4px !important;
-	font-weight: normal;
+    font-size: 11.4px !important;
+    font-weight: normal;
 }
 
 .other-reward, .credit-reward, .time-left
@@ -119,7 +109,7 @@ body
 
 .future, .grey
 {
-	background-color: #818181 !important;
+    background-color: #818181 !important;
 }
 
 .urgent
@@ -135,27 +125,27 @@ body
 .location em
 {
     font-weight: normal;
-	font-size: 11px !important;
+    font-size: 11px !important;
 }
 
 a img
 {
-	border: none;
+    border: none;
 }
 
 .centre
 {
-	text-align: center;
+    text-align: center;
 }
 
 .light
 {
-	color: #F1F1F1 !important;
+    color: #F1F1F1 !important;
 }
 
 .ai-conflict
 {
-	cursor: pointer;
+    cursor: pointer;
 }
 
 .text-left { text-align: left; }
@@ -163,95 +153,95 @@ a img
 
 .progress
 {
-	-webkit-border-radius: 3.5px 3.5px 3.5px 3.5px / 3.5px 3.5px 3.5px 3.5px;
-	position: relative;
-	width: 100%;
-	height: 20px;
-	display: table-cell;
+    -webkit-border-radius: 3.5px 3.5px 3.5px 3.5px / 3.5px 3.5px 3.5px 3.5px;
+    position: relative;
+    width: 100%;
+    height: 20px;
+    display: table-cell;
 }
 
 .corpus
 {
-	-webkit-border-top-right-radius: 0px 0px;
-	-webkit-border-bottom-right-radius: 0px 0px;
-	background-color: #407099;
-	width: 0;
+    -webkit-border-top-right-radius: 0px 0px;
+    -webkit-border-bottom-right-radius: 0px 0px;
+    background-color: #407099;
+    width: 0;
 }
 
 .grineer
 {
-	-webkit-border-top-left-radius: 0px 0px;
-	-webkit-border-bottom-left-radius: 0px 0px;
-	background-color: #BE5754;
-	width: 0;
+    -webkit-border-top-left-radius: 0px 0px;
+    -webkit-border-bottom-left-radius: 0px 0px;
+    background-color: #BE5754;
+    width: 0;
 }
 
 .left, .left .faction-badge
 {
-	float: left;
+    float: left;
 }
 
 .right, .right .faction-badge
 {
-	float: right;
+    float: right;
 }
 
 .right
 {
-	border-left: 1px solid #C5C5C5;
+    border-left: 1px solid #C5C5C5;
 }
 
 .left
 {
-	border-right: 1px solid #C5C5C5;
+    border-right: 1px solid #C5C5C5;
 }
 
 .arrow-left
 {
-	width: 0; 
-	height: 0; 
-	border-bottom: 10px solid transparent;
-	border-top: 10px solid transparent;
-	font-size: 0;
-	line-height: 0;
+    width: 0; 
+    height: 0; 
+    border-bottom: 10px solid transparent;
+    border-top: 10px solid transparent;
+    font-size: 0;
+    line-height: 0;
 }
 
 .corpus-arrow-left
 {
-	border-right: 10px solid #407099;
+    border-right: 10px solid #407099;
 }
 
 .grineer-arrow-left
 {
-	border-right: 10px solid #BE5754;
+    border-right: 10px solid #BE5754;
 }
 
 .arrow-right
 {
-	width: 0; 
-	height: 0; 
-	border-bottom: 10px solid transparent;
-	border-top: 10px solid transparent;
-	font-size: 0;
-	line-height: 0;
+    width: 0; 
+    height: 0; 
+    border-bottom: 10px solid transparent;
+    border-top: 10px solid transparent;
+    font-size: 0;
+    line-height: 0;
 }
 
 .grineer-arrow-right
 {
-	border-left: 10px solid #BE5754;
+    border-left: 10px solid #BE5754;
 }
 
 .corpus-arrow-right
 {
-	border-left: 10px solid #407099;
+    border-left: 10px solid #407099;
 }
 
 .progress .percent
 {
-	font-weight: bold;
-	border: none;
-	margin-right: 2px;
-	margin-top: 2px;
+    font-weight: bold;
+    border: none;
+    margin-right: 2px;
+    margin-top: 2px;
 }
 
 .group hr

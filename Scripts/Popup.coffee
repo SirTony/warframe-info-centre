@@ -89,7 +89,7 @@ tracker = ->
 
 $( document ).ready ->
     chrome.runtime.sendMessage { action: "RESET_ALERTS_COUNTER" }, ( response ) ->
-        if isUndefined response.status or response.status is no
+        if isUndefined( response.status ) or response.status is no
             console.error "Could not perform action '{0}': {1}".format response.action, response.message
 
     chrome.browserAction.setBadgeText { text: "" }

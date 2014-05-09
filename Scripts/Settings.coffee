@@ -54,6 +54,7 @@ save = ->
         platform: $( "#platform-selector" ).val(),
         updateInterval: if interval.between( 60, 500 ) then interval else 60,
         notify: $( "#show-notifications" ).is( ":checked" ),
+        #noSpam: $( "#notify-spam" ).is( ":checked" ),
         playSound: $( "#play-sound" ).is( ":checked" ),
         soundFile: $( "#mp3-source" ).prop( "src" ),
         alerts: {
@@ -85,6 +86,7 @@ display = ->
         $( "#platform-selector" ).val config.platform
         $( "#update-interval" ).val config.updateInterval
         $( "#show-notifications" ).prop "checked", config.notify
+        #$( "#notify-spam" ).prop "checked", config.noSpam
         $( "#play-sound" ).prop "checked", config.playSound
         $( "#money-alert" ).prop "checked", config.alerts.showCreditOnly
         $( "#money-amount" ).val config.alerts.minimumCash

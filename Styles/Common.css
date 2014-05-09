@@ -1,0 +1,14 @@
+@font-face
+{
+    font-family: 'Ubuntu';
+    font-style: normal;
+    font-weight: 400;
+    src: local( 'Ubuntu' ), url( '../Fonts/Ubuntu-R.ttf' );
+}
+
+body
+{
+    background: url( '../Images/App/Background.png' ) repeat;
+    font-family: Ubuntu, "Trebuchet MS", Verdana, Arial;
+    background-color: #131923;
+}

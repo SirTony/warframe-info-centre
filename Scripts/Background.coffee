@@ -1,6 +1,7 @@
 app   = null
 local = null
 sound = null
+activeNotifications = [ ]
 newAlertsCount = 0
 
 DEBUG = on
@@ -9,6 +10,7 @@ appDefaults = {
     platform: "PC",
     updateInterval: 60,
     notify: yes,
+    #noSpam: yes,
     playSound: no,
     soundFile: chrome.extension.getURL( "/Audio/It%20Is%20Time%20Tenno.mp3" ),
     alerts: {
@@ -53,6 +55,11 @@ setup = ->
     console.log app.soundFile
     sound = new Audio app.soundFile
 
+    chrome.notifications.onClicked.addListener ( id ) ->
+        if id in activeNotifications
+            chrome.notifications.clear id, ->
+                delete activeNotifications[activeNotifications.indexOf id]
+
     chrome.runtime.onMessage.addListener ( message, sender, reply ) ->
         if not DEBUG and not ( sender.id is "khlkgkdlljlbgpjflpjampkadjnldfec" )
             console.error "Unregocnized sender: {0}".format sender.id
@@ -86,7 +93,7 @@ setup = ->
     if shouldUpdate()
         update()
     
-    setInterval update, ( app.updateInterval * 1000 ) - 100
+    setInterval update, ( app.updateInterval * 1000 ) - 500
     setInterval policeOldAlerts, 30000 #Remove every 30 seconds.
     return
 
@@ -105,8 +112,32 @@ update = ( force = no )->
             currentKeys = local.alerts.keys()
             newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
             newAlertsCount += newKeys.length
+
+            console.log "app settings"
+            console.log app
                 
             if newAlertsCount > 0
+                notifyOpts = {
+                    type: "basic",
+                    iconUrl: chrome.extension.getURL "/Icons/Warframe.Large.png"
+                }
+
+                for k in newKeys
+                    notifyOpts.title = "#{dict[k].node} (#{dict[k].planet}) - #{dict[k].faction} #{dict[k].type}"
+                    notifyOpts.message = "#{dict[k].message}\n#{dict[k].rewards.credits}"
+
+                    if dict[k].rewards.extra.length > 0
+                        other = dict[k].rewards.extra.join ", "
+                        notifyOpts.message += "\n#{other}"
+
+                    chrome.notifications.create k, notifyOpts, ( s ) ->
+                        activeNotifications.push s
+                        setTimeout (->
+                            if s in activeNotifications
+                                chrome.notifications.clear s, ->
+                                    delete activeNotifications[activeNotifications.indexOf s]
+                        ), 10000
+
                 chrome.browserAction.setBadgeText { text: newAlertsCount.toString() }
 
                 if app.playSound
