@@ -7,12 +7,14 @@ Scripts/Background.js
 Scripts/Popup.js
 Scripts/Settings.js
 
+#Ignore all compiled LESS files
+Styles/Popup.less
+
 #Keep old stuff and stuff the developer uses for his own purposes out of the repo.
 *.old
 *.private
 *.private.*
 
 #Komodo IDE
-*.komodoproject
+*.komodo*
 *.kpf
-*.komodotools

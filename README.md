@@ -24,9 +24,16 @@ Building
 
 WIC is primarily written in CoffeeScript, which has to be compiled to JavaScript before the extension can be used. If you would like to build this extension for yourself, you will need to perform a few extra steps.
 
-1. Install Python 3.x from [Python.org](https://www.python.org/downloads/) if you don't have it already.
-2. Install Python's [CoffeeScript](https://pypi.python.org/pypi/CoffeeScript/1.0.9) and [PyExecJS](https://pypi.python.org/pypi/PyExecJS) modules to your Python 3.x installation.
-3. Run `build.py` from the command-line to compile all `.coffee` files to `.js` files.
+1. Install [Node.js](http://nodejs.org/) if you do not already have it.
+2. Install [CoffeeScript](http://coffeescript.org/) with `npm install -g coffee-script`.
+3. Install [LESS](http://lesscss.org/) with `npm install -g less`.
+4. Run `node compile.js` from the command line to compile all `.less`. and `.coffee` files to `.css` and `.js` respectively.
+
+### Troubleshooting
+
+If you are getting module import errors when trying to `require()` the `coffee-script` and `less` modules, you may not have the `NODE_PATH` environment variable set, or it may be set incorrectly. Ensure that the `NODE_PATH` environment variable exists and points to the directory containing the CoffeeScript and LESS modules.
+
+If importing the modules is not the problem, then there is likely a problem with the build script itself, in which case you should [open a new issue](https://github.com/Syke94/warframe-info-centre/issues). When creating this new issue, please include the text output from the console/terminal as well as the version of WIC you are trying to build (found in the `manifest.json` file on line 8. Ex. `"version": "0.2.3.57"`).
 
 Contributing
 ============
