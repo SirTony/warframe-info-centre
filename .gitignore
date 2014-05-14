@@ -8,7 +8,7 @@ Scripts/Popup.js
 Scripts/Settings.js
 
 #Ignore all compiled LESS files
-Styles/Popup.less
+Styles/Popup.css
 
 #Keep old stuff and stuff the developer uses for his own purposes out of the repo.
 *.old
