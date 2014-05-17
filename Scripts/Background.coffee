@@ -27,6 +27,7 @@ appDefaults = {
 
 localDefaults = {
     alerts: { },
+    invasions: { },
     lastUpdate: null
 }
 

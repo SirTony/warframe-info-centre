@@ -19,7 +19,7 @@ htmlFormat = {
         <td><em>{5}</em></td>
         <td class=\"credit-reward\">{6}</td>
     </tr>
-</table>"
+</table>",
 
     ###
         Format specifiers:
@@ -46,16 +46,70 @@ htmlFormat = {
         <td><em>{6}</em></td>
         <td class=\"credit-reward\">{7}</td>
     </tr>
-</table>"
+</table>",
     
     noAlerts: "<table id=\"alerts-table-0\" cellspacing=\"0\" cellpadding=\"3\">
     <tr>
         <td style=\"text-align: center;\"><em>No alerts at this time.</em></td>
     </tr>
-</table>"
+</table>",
+
+    ###
+        {0}  - ID
+        {1}  - Location
+        {2}  - Type
+        {3}  - Defending faction
+        {4}  - Defending level range
+        {5}  - Defending mission type
+        {6}  - Attacking faction
+        {7}  - Attacking level range
+        {8}  - Attacking mission type
+        {9}  - Score (in current/required format)
+        {10} - How long the invasion has been active
+        {11} - Estimated time to completion.
+        {12} - Attacking faction completion percent.
+        {13} - Attacking faction CSS class.
+        {14} - Defending faction completion percent.
+        {15} - Defending faction CSS class.
+        {16} - Rewards.
+    ###
+    invasion: "<table class=\"ai-conflict\" id=\"invasion-table-{0}\" cellpadding=\"3\" cellspacing=\"0\" border=\"0\">
+    <tr>
+        <th colspan=\"2\" class=\"centre\">{1} <em class=\"extra\">- {2}</em></th>
+    </tr>
+    <tr>
+        <td colspan=\"2\" class=\"centre\">
+            <strong>{3}</strong> <span class=\"extra\">{4} ({5})</span>
+            <strong>vs.</strong>
+            <strong>{6}</strong> <span class=\"extra\">{7} ({8})</span></td>
+    </tr>
+    <tr id=\"score\" class=\"extra\">
+        <td colspan=\"2\" class=\"centre\"><em>Score: {9} | Active for: {10} | ETA: {11}</em></td>
+    </tr>
+    <tr>
+        <td colspan=\"2\">
+            <div style=\"width: {12};\" class=\"progress {13} right\">
+                <img class=\"faction-badge\" src=\"Images/App/{6}.png\" height=\"20\" width=\"20\" />
+            </div>
+            <div style=\"width: {14};\" class=\"progress {15} left\">
+                <div class=\"{15}-{13}\"></div>
+                <img class=\"faction-badge\" src=\"Images/App/{6}.png\" height=\"20\" width=\"20\" />
+            </div>
+        </td>
+    </tr>
+    {16}
+</table>",
+
+    noInvasions: "<table id=\"invasion-table-0\" cellspacing=\"0\" cellpadding=\"3\">
+    <tr>
+        <td style=\"text-align: center;\"><em>No invasions at this time.</em></td>
+    </tr>
+</table>",
+
 }
 
 tracked = { }
+trackerTicks = 0
 
 makeTimeElement = ( start, expire ) ->
     __now = now()
@@ -72,29 +126,151 @@ makeTimeElement = ( start, expire ) ->
     return html
 
 tracker = ->
+
+    ###
+        Every 10 seconds we poll LocalSettings to check if there are any new alerts.
+        If there are, we rebuild the alert section HTML to put it in the list while
+        the popup window is open. The HTML will only be re-built if a new alert is
+        detected, not every 10 seconds.
+        ---
+        trackerTicks is incremented once every time setInterval() invokes tracker()
+        since the time on setInterval() is set to 500ms/0.5s, 20 ticks = 10 seconds.
+    ###
+    if trackerTicks is 20
+        trackerTicks = 0
+
+        LocalSettings.getAll ( x ) ->
+            __new = 0
+
+            for k, v of x.alerts
+                if not x.alerts.hasOwnProperty( k ) or not ( k in tracked )
+                    continue
+                else
+                    tracked[k] = v
+                    ++__new
+
+            if __new > 0
+                buildAlerts tracked
+    else
+        ++trackerTicks
+
     for k, v of tracked
         if not tracked.hasOwnProperty k
             continue
         
-        if v.expire - now() <= -120
+        if v.expireTime - now() <= -120
             $( "#alerts-table-{0}".format k ).remove()
             delete tracked[k]
         else
-            $( "#alerts-table-{0} .time-left".format k ).html( makeTimeElement( v.start, v.expire ) )
+            $( "#alerts-table-{0} .time-left".format k ).html( makeTimeElement( v.startTime, v.expireTime ) )
         
         if $( "#alerts-container" ).children().length is 0
             $( "#alerts-container" ).html htmlFormat.noAlerts
         
     return
 
+
+buildInvasions = ( object ) ->
+    inner = ""
+
+    for k, v of object
+        if not object.hasOwnProperty k
+            continue
+
+        attacker = if v.factions.contestant.name is "Infestation" then "Infested" else v.factions.contestant.name
+        percent = if v.score.current < 0 then 100.0 - v.score.percent else v.score.percent
+
+        rewards = ""
+
+        if attacker is "Infested"
+            rewards = "<tr colspan=\"2\">
+    <td class=\"text-left\">
+        <span class=\"round light\">#{v.factions.controlling.reward}</span>
+    </td>
+</tr>"
+        else
+            rewards = "<tr>
+    <td class=\"text-left\">
+        <span class=\"round light\">#{v.factions.controlling.reward}</span>
+    </td>
+    <td class=\"text-right\">
+        <span class=\"round light\">#{v.factions.contestant.reward}</span>
+    </td>
+</tr>"
+
+        inner += htmlFormat.invasion.format(
+            k,
+            "{0} ({1})".format( v.node, v.planet ),
+            v.message,
+            v.factions.controlling.name,
+            "Lv. {0}-{1}".format( v.factions.controlling.levelRange.low, v.factions.controlling.levelRange.high ),
+            v.factions.controlling.missionType,
+            attacker,
+            "Lv. {0}-{1}".format( v.factions.contestant.levelRange.low, v.factions.contestant.levelRange.high ),
+            v.factions.contestant.missionType,
+            "{0}/{1}".format( v.score.current, v.score.goal ),
+            timeSpan( Math.abs( now() - v.startTime ) ),
+            v.eta,
+            percent,
+            attacker.toLowerCase(),
+            100.0 - percent,
+            v.factions.controlling.name.toLowerCase(),
+            rewards
+        )
+
+    if inner is ""
+        inner = htmlFormat.noInvasions
+
+    $( "#invasions-container" ).html inner
+
+buildAlerts = ( object ) ->
+    inner = ""
+
+    for k, v of object
+        try
+            if not object.hasOwnProperty k
+                console.log "Bad key."
+                continue
+                
+            console.log "Building alert " + k
+                
+            diff = v.expireTime - now()
+                
+            if diff <= -120
+                console.log "Old alert ({0}). Expires: {1} ({2}); Now: {3} ({4}).".format k, v.expireTime, new Date( v.expireTime * 1000 ), now(), new Date( now() * 1000 )
+                continue
+            else
+                console.log "Expires: {1} ({2}); Now: {3} ({4}).".format v.expireTime, new Date( v.expireTime ), now(), new Date( now() * 1000 )
+                
+            tracked[k] = v
+                
+            type = "{0} {1}".format v.faction, v.type
+            where = "{0} ({1})".format v.node, v.planet
+            range = "Lv. {0}-{1}".format v.levelRange.low, v.levelRange.high
+                
+            if v.rewards.extra.length > 0
+                inner += htmlFormat.extraReward.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.rewards.extra[0], v.message, v.rewards.credits ) 
+            else
+                inner += htmlFormat.creditOnly.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.message, v.rewards.credits ) 
+        catch e
+            console.log e.stack.toString()
+
+    console.log( if inner is "" then "<Empty>" else inner )
+        
+    if inner is ""
+        inner = htmlFormat.noAlerts
+            
+    $( "#alerts-container" ).html inner
+
 $( document ).ready ->
     chrome.runtime.sendMessage { action: "RESET_ALERTS_COUNTER" }, ( response ) ->
-        if isUndefined( response.status ) or response.status is no
-            console.error "Could not perform action '{0}': {1}".format response.action, response.message
+        if isUndefined( response ) or isUndefined( response.status ) or response.status is no
+            console.error "Invalid message."
 
     chrome.browserAction.setBadgeText { text: "" }
     
-    alertsValue = 360 #invasionsValue = 360
+    alertsValue = 360
+    #invasionsValue = 360
     
     $( "#alerts-expander" ).rotate alertsValue
     #$( "#invasions-expander" ).rotate invasionsValue
@@ -152,41 +328,6 @@ $( document ).ready ->
         inner = ""
         
         console.log x.alerts
-        
-        for k, v of x.alerts
-            try
-                if not x.alerts.hasOwnProperty( k )
-                    console.log "Bad key."
-                    continue
-                
-                console.log "Building alert " + k
-                
-                diff = v.expireTime - now()
-                
-                if diff <= -120
-                    console.log "Old alert ({0}). Expires: {1} ({2}); Now: {3} ({4}).".format k, v.expireTime, new Date( v.expireTime * 1000 ), now(), new Date( now() * 1000 )
-                    continue
-                else
-                    console.log "Expires: {1} ({2}); Now: {3} ({4}).".format v.expireTime, new Date( v.expireTime ), now(), new Date( now() * 1000 )
-                
-                tracked[k] = { start: v.startTime, expire: v.expireTime }
-                
-                type = "{0} {1}".format v.faction, v.type
-                where = "{0} ({1})".format v.node, v.planet
-                range = "Lv. {0}-{1}".format v.levelRange.low, v.levelRange.high
-                
-                if v.rewards.extra.length > 0
-                    inner += htmlFormat.extraReward.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.rewards.extra[0], v.message, v.rewards.credits ) 
-                else
-                    inner += htmlFormat.creditOnly.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.message, v.rewards.credits ) 
-            catch e
-                console.log e.stack.toString()
-
-        console.log( if inner is "" then "<Empty>" else inner )
-        
-        if inner is ""
-            inner = htmlFormat.noAlerts
-            
-        $( "#alerts-container" ).html inner
+        buildAlerts x.alerts
         setInterval tracker, 500
     return
