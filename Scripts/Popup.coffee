@@ -73,7 +73,7 @@ htmlFormat = {
         {15} - Defending faction CSS class.
         {16} - Rewards.
     ###
-    invasion: "<table class=\"ai-conflict\" id=\"invasion-table-{0}\" cellpadding=\"3\" cellspacing=\"0\" border=\"0\">
+    invasion: "<table title=\"Click for more information.\" class=\"ai-conflict\" id=\"invasion-table-{0}\" cellpadding=\"3\" cellspacing=\"0\" border=\"0\">
     <tr>
         <th colspan=\"2\" class=\"centre\">{1} <em class=\"extra\">- {2}</em></th>
     </tr>
@@ -81,19 +81,19 @@ htmlFormat = {
         <td colspan=\"2\" class=\"centre\">
             <strong>{3}</strong> <span class=\"extra\">{4} ({5})</span>
             <strong>vs.</strong>
-            <strong>{6}</strong> <span class=\"extra\">{7} ({8})</span></td>
+            <strong>{6}</strong> <span class=\"extra\">{7} ({8})</span> - {12}%</td>
     </tr>
     <tr id=\"score\" class=\"extra\">
-        <td colspan=\"2\" class=\"centre\"><em>Score: {9} | Active for: {10} | ETA: {11}</em></td>
+        <td colspan=\"2\" class=\"centre\"><em>Score: {9} | Active for: {10} | {11}</em></td>
     </tr>
     <tr>
         <td colspan=\"2\">
-            <div style=\"width: {12};\" class=\"progress {13} right\">
+            <div style=\"width: {12}%;\" class=\"progress {13} right\">
                 <img class=\"faction-badge\" src=\"Images/App/{6}.png\" height=\"20\" width=\"20\" />
             </div>
-            <div style=\"width: {14};\" class=\"progress {15} left\">
+            <div style=\"width: {14}%;\" class=\"progress {15} left\">
                 <div class=\"{15}-{13}\"></div>
-                <img class=\"faction-badge\" src=\"Images/App/{6}.png\" height=\"20\" width=\"20\" />
+                <img class=\"faction-badge\" src=\"Images/App/{3}.png\" height=\"20\" width=\"20\" />
             </div>
         </td>
     </tr>
@@ -108,7 +108,7 @@ htmlFormat = {
 
 }
 
-tracked = { }
+trackedAlerts = {}
 trackerTicks = 0
 
 makeTimeElement = ( start, expire ) ->
@@ -125,7 +125,14 @@ makeTimeElement = ( start, expire ) ->
 
     return html
 
-tracker = ->
+invasionsTracker = ->
+    
+    ###
+        Invasions are re-built completely every 60 seconds.
+    ###
+    LocalSettings.getAll ( x ) -> buildInvasions x.invasions
+
+alertsTracker = ->
 
     ###
         Every 10 seconds we poll LocalSettings to check if there are any new alerts.
@@ -133,7 +140,7 @@ tracker = ->
         the popup window is open. The HTML will only be re-built if a new alert is
         detected, not every 10 seconds.
         ---
-        trackerTicks is incremented once every time setInterval() invokes tracker()
+        trackerTicks is incremented once every time setInterval() invokes alertsTracker()
         since the time on setInterval() is set to 500ms/0.5s, 20 ticks = 10 seconds.
     ###
     if trackerTicks is 20
@@ -141,26 +148,26 @@ tracker = ->
 
         LocalSettings.getAll ( x ) ->
             __new = 0
-
             for k, v of x.alerts
-                if not x.alerts.hasOwnProperty( k ) or not ( k in tracked )
+                if not x.alerts.hasOwnProperty( k ) or not ( k in trackedAlerts )
                     continue
                 else
-                    tracked[k] = v
+                    trackedAlerts[k] = v
                     ++__new
 
             if __new > 0
-                buildAlerts tracked
+                buildAlerts trackedAlerts
+
     else
         ++trackerTicks
 
-    for k, v of tracked
-        if not tracked.hasOwnProperty k
+    for k, v of trackedAlerts
+        if not trackedAlerts.hasOwnProperty k
             continue
         
         if v.expireTime - now() <= -120
             $( "#alerts-table-{0}".format k ).remove()
-            delete tracked[k]
+            delete trackedAlerts[k]
         else
             $( "#alerts-table-{0} .time-left".format k ).html( makeTimeElement( v.startTime, v.expireTime ) )
         
@@ -173,12 +180,17 @@ tracker = ->
 buildInvasions = ( object ) ->
     inner = ""
 
+    console.log "building invasions"
+
     for k, v of object
         if not object.hasOwnProperty k
             continue
 
         attacker = if v.factions.contestant.name is "Infestation" then "Infested" else v.factions.contestant.name
         percent = if v.score.current < 0 then 100.0 - v.score.percent else v.score.percent
+
+        if Math.abs( v.score.current ) >= v.score.goal
+            continue
 
         rewards = ""
 
@@ -229,20 +241,12 @@ buildAlerts = ( object ) ->
     for k, v of object
         try
             if not object.hasOwnProperty k
-                console.log "Bad key."
                 continue
-                
-            console.log "Building alert " + k
                 
             diff = v.expireTime - now()
                 
-            if diff <= -120
-                console.log "Old alert ({0}). Expires: {1} ({2}); Now: {3} ({4}).".format k, v.expireTime, new Date( v.expireTime * 1000 ), now(), new Date( now() * 1000 )
-                continue
-            else
-                console.log "Expires: {1} ({2}); Now: {3} ({4}).".format v.expireTime, new Date( v.expireTime ), now(), new Date( now() * 1000 )
-                
-            tracked[k] = v
+            if not ( k in trackedAlerts )
+                trackedAlerts[k] = v
                 
             type = "{0} {1}".format v.faction, v.type
             where = "{0} ({1})".format v.node, v.planet
@@ -254,8 +258,6 @@ buildAlerts = ( object ) ->
                 inner += htmlFormat.creditOnly.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.message, v.rewards.credits ) 
         catch e
             console.log e.stack.toString()
-
-    console.log( if inner is "" then "<Empty>" else inner )
         
     if inner is ""
         inner = htmlFormat.noAlerts
@@ -270,10 +272,10 @@ $( document ).ready ->
     chrome.browserAction.setBadgeText { text: "" }
     
     alertsValue = 360
-    #invasionsValue = 360
+    invasionsValue = 360
     
     $( "#alerts-expander" ).rotate alertsValue
-    #$( "#invasions-expander" ).rotate invasionsValue
+    $( "#invasions-expander" ).rotate invasionsValue
     
     slideOpts = {
         duration: 500,
@@ -301,7 +303,6 @@ $( document ).ready ->
         }
     }
     
-    ###
     $( "#invasions-expander" ).rotate {
         bind: {
             click: ->
@@ -322,12 +323,13 @@ $( document ).ready ->
                     return
         }
     }
-    ###
     
     LocalSettings.getAll ( x ) ->
         inner = ""
-        
-        console.log x.alerts
+
         buildAlerts x.alerts
-        setInterval tracker, 500
+        buildInvasions x.invasions
+
+        setInterval alertsTracker, 500 #half second
+        setInterval invasionsTracker, 60000 #one minute
     return

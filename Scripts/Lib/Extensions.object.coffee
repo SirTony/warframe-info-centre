@@ -1,3 +1,5 @@
+Object::owns = ( prop ) -> this.hasOwnProperty prop
+
 Object::selectKeys = ->
 	if arguments.length is 0
 		return @

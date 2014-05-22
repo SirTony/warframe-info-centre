@@ -2,7 +2,7 @@ app   = null
 local = null
 sound = null
 activeNotifications = [ ]
-newAlertsCount = 0
+newItemsCount = 0
 
 DEBUG = on
 
@@ -35,9 +35,9 @@ shouldUpdate = ->
     console.trace "Checking update status."
     return local.lastUpdate is null or now() - local.lastUpdate >= app.updateInterval
 
-policeOldAlerts = ->
+policeOldData = ->
     for k, v of local.alerts
-        if not local.alerts.hasOwnProperty k
+        if not local.alerts.owns k
             continue
         
         __now = now()
@@ -45,10 +45,14 @@ policeOldAlerts = ->
         if v.expireTime - __now <= -120
             delete local.alerts[k]
     
+    for k, v of local.invasions
+        if not local.invasions.owns k
+            continue
+
+        if Math.abs( v.score.current ) >= v.score.goal
+            delete local.invasions[k]
+
     LocalSettings.update local, ->
-        console.log "Removed some alerts."
-    
-    return
 
 setup = ->
     console.trace "Setting up extension."
@@ -73,7 +77,7 @@ setup = ->
 
                     if not ( dict.platform is app.platform )
                         local.alerts = { }
-                        newAlertsCount = 0
+                        newItemsCount = 0
                         
                     app = dict
                     sound = new Audio app.soundFile
@@ -85,7 +89,7 @@ setup = ->
                         return
                     return
             when "RESET_ALERTS_COUNTER"
-                newAlertsCount = 0
+                newItemsCount = 0
                 reply { status: yes }
             else
                 reply { action: message.action, status: no, message: "Unrecognised action '{0}'.".format message.action }
@@ -95,7 +99,7 @@ setup = ->
         update()
     
     setInterval update, ( app.updateInterval * 1000 ) - 500
-    setInterval policeOldAlerts, 30000 #Remove every 30 seconds.
+    setInterval policeOldData, 30000 #Remove every 30 seconds.
     return
 
 update = ( force = no )->
@@ -103,6 +107,11 @@ update = ( force = no )->
     
     if force is yes or shouldUpdate()
         console.trace "Updating."
+
+        notifyOpts = {
+            type: "basic",
+            iconUrl: chrome.extension.getURL "/Icons/Warframe.Large.png"
+        }
         
         Api.getAlerts ( dict ) ->
             console.log( "Fetched data." );
@@ -112,17 +121,9 @@ update = ( force = no )->
                 
             currentKeys = local.alerts.keys()
             newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
-            newAlertsCount += newKeys.length
+            newItemsCount += newKeys.length
 
-            console.log "app settings"
-            console.log app
-                
-            if newAlertsCount > 0
-                notifyOpts = {
-                    type: "basic",
-                    iconUrl: chrome.extension.getURL "/Icons/Warframe.Large.png"
-                }
-
+            if newKeys.length > 0
                 for k in newKeys
                     notifyOpts.title = "#{dict[k].node} (#{dict[k].planet}) - #{dict[k].faction} #{dict[k].type}"
                     notifyOpts.message = "#{dict[k].message}\n#{dict[k].rewards.credits}"
@@ -133,29 +134,58 @@ update = ( force = no )->
 
                     chrome.notifications.create k, notifyOpts, ( s ) ->
                         activeNotifications.push s
-                        setTimeout (->
+                        setTimeout ( ->
                             if s in activeNotifications
                                 chrome.notifications.clear s, ->
                                     delete activeNotifications[activeNotifications.indexOf s]
                         ), 10000
-
-                chrome.browserAction.setBadgeText { text: newAlertsCount.toString() }
-
-                if app.playSound
-                    sound.play()
                 
             for k, v of dict
-                if dict.hasOwnProperty k
+                if dict.owns k
                     local.alerts[k] = v
-                
-            LocalSettings.update local, ->
-                console.log "Updated local settings."
-                    
-            return
-        return
+             
+            #End Api.getAlerts
+
+            Api.getInvasions ( dict ) ->
+                currentKeys = local.invasions.keys()
+                newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
+                newItemsCount += newKeys.length
+
+                if newKeys.length > 0
+                    for k in newKeys
+                        notifyOpts.title = "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})"
+                        notifyOpts.message = "Rewards:\n"
+
+                        if dict[k].factions.contestant.reward is null
+                            notifyOpts.message += "\t#{dict[k].factions.controlling.name}: #{dict[k].factions.controlling.reward}"
+                        else
+                            notifyOpts.message += "\t#{dict[k].factions.controlling.name}: #{dict[k].factions.controlling.reward}\n" +
+                                                  "\t#{dict[k].factions.contestant.name}: #{dict[k].factions.contestant.reward}"
+
+                        chrome.notifications.create k, notifyOpts, ( s ) ->
+                            activeNotifications.push s
+                            setTimeout ( ->
+                                if s in activeNotifications
+                                    chrome.notifications.clear s, ->
+                                        delete activeNotifications[activeNotifications.indexOf s]
+                            ), 10000
+
+                for k, v of dict
+                    if dict.owns k
+                        local.invasions[k] = v
+
+                LocalSettings.update local, ->
+                    console.log "Updated local settings."
+
+                    if newItemsCount > 0
+                        chrome.browserAction.setBadgeText { text: newItemsCount.toString() }
+
+                    if app.playSound
+                        sound.play()
+
+                #End Api.getInvasions
     else
         console.trace "No need to update."
-    return
 
 ###
     The reload param is for telling the function whether or not

@@ -196,14 +196,14 @@ a img
     background: linear-gradient( to right, @start, @stop );
 }
 
-.infested-grineer
+.grineer-infested
 {
-    .gradient( @Infested, @Grineer );
+    .gradient( @Grineer, @Infested );
 }
 
-.infested-corpus
+.corpus-infested
 {
-    .gradient( @Infested, @Grineer );
+    .gradient( @Corpus, @Infested );
 }
 
 .grineer-corpus
@@ -258,11 +258,12 @@ a img
 .lotus
 {
     z-index: -9999;
-    position: absolute;
+    position: fixed;
     right: -39px;
     bottom: -72px;
 }
 
+/*
 .ai-conflict
 {
     .extra
@@ -270,3 +271,4 @@ a img
         display: none;
     }
 }
+*/
