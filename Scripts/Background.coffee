@@ -35,21 +35,21 @@ shouldUpdate = ->
 
 policeOldData = ->
     for k, v of local.alerts
-        if not local.alerts.owns k
+        if not owns local.alerts, k
             continue
         
         __now = now()
         
         if v.expireTime - __now <= -120
             delete local.alerts[k]
-    
+    ###
     for k, v of local.invasions
         if not local.invasions.owns k
             continue
 
         if Math.abs( v.score.current ) >= v.score.goal
             delete local.invasions[k]
-
+    ###
     LocalSettings.update local, ->
 
 setup = ->
@@ -117,8 +117,8 @@ update = ( force = no )->
             
             local.lastUpdate = now()
                 
-            currentKeys = local.alerts.keys()
-            newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
+            currentKeys = keys local.alerts
+            newKeys = keys( dict ).filter ( x ) -> not ( x in currentKeys )
             newItemsCount += newKeys.length
 
             if newKeys.length > 0
@@ -139,14 +139,14 @@ update = ( force = no )->
                         ), 10000
                 
             for k, v of dict
-                if dict.owns k
+                if owns dict, k
                     local.alerts[k] = v
              
             #End Api.getAlerts
 
             Api.getInvasions ( dict ) ->
-                currentKeys = local.invasions.keys()
-                newKeys = dict.keys().filter ( x ) -> not ( x in currentKeys )
+                currentKeys = keys local.invasions
+                newKeys = keys( dict ).filter ( x ) -> not ( x in currentKeys )
                 newItemsCount += newKeys.length
 
                 if newKeys.length > 0
@@ -167,11 +167,12 @@ update = ( force = no )->
                                     chrome.notifications.clear s, ->
                                         delete activeNotifications[activeNotifications.indexOf s]
                             ), 10000
-
+                local.invasions = dict
+                ###
                 for k, v of dict
                     if dict.owns k
                         local.invasions[k] = v
-
+                ###
                 LocalSettings.update local, ->
                     console.log "Updated local settings."
 
@@ -205,7 +206,7 @@ loadConfig = ( reload ) ->
     ###
     
     AppSettings.getAll ( appRes ) ->
-        if isUndefined( appRes ) or appRes is null or not ( appRes.keys().length is appDefaults.keys().length )
+        if isUndefined( appRes ) or appRes is null or not ( keys( appRes ).length is keys( appDefaults ).length )
             AppSettings.update appDefaults, ->
                 AppSettings.getAll ( appRes2 ) ->
                     app = appRes2
@@ -215,7 +216,7 @@ loadConfig = ( reload ) ->
             app = appRes
         
         LocalSettings.getAll ( locRes ) ->
-            if isUndefined( locRes ) or locRes is null or not ( locRes.keys().length is localDefaults.keys().length )
+            if isUndefined( locRes ) or locRes is null or not ( keys( locRes ).length is keys( localDefaults ).length )
                 LocalSettings.update localDefaults, ->
                     LocalSettings.getAll ( locRes2 ) ->
                         local = locRes2

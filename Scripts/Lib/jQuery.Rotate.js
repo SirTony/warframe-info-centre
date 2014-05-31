@@ -25,7 +25,7 @@
           var returned=[];
           for (var i=0,i0=this.length;i<i0;i++)
           {
-            var element=this.get(i);	
+            var element=this.get(i);    
             if (!element.Wilq32 || !element.Wilq32.PhotoEffect) {
 
               var paramClone = $.extend(true, {}, parameters); 
@@ -43,7 +43,7 @@
           var ret = [];
           for (var i=0,i0=this.length;i<i0;i++)
           {
-            var element=this.get(i);	
+            var element=this.get(i);    
             if (element.Wilq32 && element.Wilq32.PhotoEffect) {
               ret[i] = element.Wilq32.PhotoEffect._angle;
             }
@@ -53,7 +53,7 @@
         stopRotate: function(){
           for (var i=0,i0=this.length;i<i0;i++)
           {
-            var element=this.get(i);	
+            var element=this.get(i);    
             if (element.Wilq32 && element.Wilq32.PhotoEffect) {
               clearTimeout(element.Wilq32.PhotoEffect._timer);
             }
@@ -192,11 +192,11 @@
             this._rootObj.style.width=width+"px";
             this._rootObj.style.height=height+"px";
             this._rootObj.setAttribute('id',this._img.getAttribute('id'));
-            this._rootObj.className=this._img.className;			
-            this._eventObj = this._rootObj;	
+            this._rootObj.className=this._img.className;            
+            this._eventObj = this._rootObj;    
             var parameters;
             while (parameters = this._onLoadDelegate.shift()) {
-              this._handleRotation(parameters, true);	
+              this._handleRotation(parameters, true);    
             }
           }
           else return function () {
@@ -212,7 +212,7 @@
             this._aspectW = this._img.offsetWidth/this._img.naturalWidth;
             this._aspectH = this._img.offsetHeight/this._img.naturalHeight;
 
-            this._img.parentNode.removeChild(this._img);	
+            this._img.parentNode.removeChild(this._img);    
 
 
             this._canvas=document.createElement('canvas');
@@ -230,13 +230,13 @@
             this._cnv=this._canvas.getContext('2d');
             var parameters;
             while (parameters = this._onLoadDelegate.shift()) {
-              this._handleRotation(parameters, true);	
+              this._handleRotation(parameters, true);    
             }
           }
       })(),
 
       _animateStart:function()
-      {	
+      {    
         if (this._timer) {
           clearTimeout(this._timer);
         }
@@ -303,17 +303,17 @@
           {
             this._angle = angle;
             angle=(angle%360)* rad;
-            // clear canvas	
+            // clear canvas    
             this._canvas.width = this._width;//+this._widthAdd;
             this._canvas.height = this._height;//+this._heightAdd;
 
             // REMEMBER: all drawings are read from backwards.. so first function is translate, then rotate, then translate, translate..
-            this._cnv.translate(this._imgWidth*this._aspectW,this._imgHeight*this._aspectH);	// at least center image on screen
-            this._cnv.translate(this._rotationCenterX,this._rotationCenterY);			// we move image back to its orginal 
-            this._cnv.rotate(angle);										// rotate image
-            this._cnv.translate(-this._rotationCenterX,-this._rotationCenterY);		// move image to its center, so we can rotate around its center
+            this._cnv.translate(this._imgWidth*this._aspectW,this._imgHeight*this._aspectH);    // at least center image on screen
+            this._cnv.translate(this._rotationCenterX,this._rotationCenterY);            // we move image back to its orginal 
+            this._cnv.rotate(angle);                                        // rotate image
+            this._cnv.translate(-this._rotationCenterX,-this._rotationCenterY);        // move image to its center, so we can rotate around its center
             this._cnv.scale(this._aspectW,this._aspectH); // SCALE - if needed ;)
-            this._cnv.drawImage(this._img, 0, 0);							// First - we draw image
+            this._cnv.drawImage(this._img, 0, 0);                            // First - we draw image
           }
 
       })()
@@ -332,7 +332,7 @@
             return function (tagName) {
               return document.createElement('<' + tagName + ' xmlns="urn:schemas-microsoft.com:vml" class="rvml">');
             };
-          }		
+          }        
         })();
       }
 

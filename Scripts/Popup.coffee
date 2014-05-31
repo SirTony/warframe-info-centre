@@ -149,7 +149,7 @@ alertsTracker = ->
         LocalSettings.getAll ( x ) ->
             __new = 0
             for k, v of x.alerts
-                if not x.alerts.hasOwnProperty( k ) or not ( k in trackedAlerts )
+                if not owns( x.alerts, k ) or not ( k in trackedAlerts )
                     continue
                 else
                     trackedAlerts[k] = v
@@ -162,7 +162,7 @@ alertsTracker = ->
         ++trackerTicks
 
     for k, v of trackedAlerts
-        if not trackedAlerts.hasOwnProperty k
+        if not owns trackedAlerts, k
             continue
         
         if v.expireTime - now() <= -120
@@ -183,7 +183,7 @@ buildInvasions = ( object ) ->
     console.log "building invasions"
 
     for k, v of object
-        if not object.hasOwnProperty k
+        if not owns object, k
             continue
 
         attacker = if v.factions.contestant.name is "Infestation" then "Infested" else v.factions.contestant.name
@@ -223,7 +223,7 @@ buildInvasions = ( object ) ->
             "{0}/{1}".format( v.score.current, v.score.goal ),
             timeSpan( Math.abs( now() - v.startTime ) ),
             v.eta,
-            percent,
+            percent.toFixed( 2 ),
             attacker.toLowerCase(),
             100.0 - percent,
             v.factions.controlling.name.toLowerCase(),
@@ -240,7 +240,7 @@ buildAlerts = ( object ) ->
 
     for k, v of object
         try
-            if not object.hasOwnProperty k
+            if not owns object, k
                 continue
                 
             diff = v.expireTime - now()
