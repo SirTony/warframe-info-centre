@@ -6,6 +6,7 @@ Scripts/Lib/Api.js
 Scripts/Background.js
 Scripts/Popup.js
 Scripts/Settings.js
+Scripts/App.js
 
 #Ignore all compiled LESS files
 Styles/Popup.css

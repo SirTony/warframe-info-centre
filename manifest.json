@@ -5,8 +5,8 @@
     
     "name":        "Warframe Info Centre",
     "description": "This extension keeps you updated with the latest alerts and invasions in Warframe.",
-    "version": "0.2.3.61",
-    "author":      "Tony M. (/u/SirNastyPants)",
+    "version": "0.2.3.62",
+    "author":      "Tony Montana (/u/SirNastyPants)",
     
     "offline_enabled":        false,
     "minimum_chrome_version": "22",
@@ -22,9 +22,9 @@
     
     "background": {
         "scripts": [
+            "Scripts/App.js",
             "Scripts/Lib/Exceptions.js",
-            "Scripts/Lib/Extensions.object.js",
-            "Scripts/Lib/Extensions.compat.js",
+            "Scripts/Lib/Extensions.js",
             "Scripts/Lib/Api.js",
             "Scripts/Lib/Settings.js",
             "Scripts/Background.js"

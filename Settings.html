@@ -1,21 +1,22 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 
     <head>
         <title>Warframe Info Centre</title>
         <meta http-equiv="content-type" content="text/html;charset=utf-8" />
-        <script type="text/javascript" src="Scripts/Lib/jQuery.min.js"></script>
+        <script type="text/javascript" src="Scripts/App.js"></script>
+        <script type="text/javascript" src="Scripts/Lib/jQuery.js"></script>
         <script type="text/javascript" src="Scripts/Lib/Exceptions.js"></script>
-        <script type="text/javascript" src="Scripts/Lib/Extensions.compat.js"></script>
+        <script type="text/javascript" src="Scripts/Lib/Extensions.js"></script>
         <script type="text/javascript" src="Scripts/Lib/Settings.js"></script>
         <script type="text/javascript" src="Scripts/Settings.js"></script>
-        <link rel="stylesheet" type="text/css" href="Styles/Common.css" />
+        <link rel="stylesheet" type="text/css" href="Styles/Common.css" media="all" />
         <link rel="stylesheet" href="Styles/Settings.css" media="all" />
     </head>
 
     <body>
         <div id="noty" style="display: none;"></div>
-        <table class="options-table" id="main-table" cellpadding="0" cellspacing="3">
+        <table class="options-table" id="main-table" ><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header main-header" colspan="2">Warframe Info Centre Settings</th>
             </tr>
@@ -85,7 +86,7 @@
                 <td><input type="checkbox" id="track-resources"/><label for="track-resources"><span></span>Show resource alerts.</label></td>
             </tr>
         </table>
-        <table class="options-table" id="blueprint-table" cellpadding="0" cellspacing="3">
+        <table class="options-table" id="blueprint-table" ><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header" colspan="2">Blueprints - <span class="smaller"><a href="javascript:void0" id="bp-check-all">Check</a>/<a href="javascript:void0" id="bp-uncheck-all">Uncheck</a> All</span></th>
             </tr>
@@ -194,7 +195,7 @@
                 <td><input type="checkbox" id="scindo-dagger-bp" value="Dagger Axe Skin Blueprint (Scindo)"/><label for="scindo-dagger-bp"><span></span>Dagger Axe Skin Blueprint (Scindo)</label></td>
             </tr>
         </table>
-        <table class="options-table" id="mod-table" cellpadding="0" cellspacing="3">
+        <table class="options-table" id="mod-table" ><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header" colspan="2">Nightmare Mods - <span class="smaller"><a href="javascript:void0" id="mod-check-all">Check</a>/<a href="javascript:void0" id="mod-uncheck-all">Uncheck</a> All</span></th>
             </tr>
@@ -226,7 +227,7 @@
                 <td><input type="checkbox" id="lethaltorrent-mod" value="Lethal Torrent"/><label for="lethaltorrent-mod"><span></span>Lethal Torrent</label></td>
             </tr>
         </table>
-        <table class="options-table" id="resource-table" cellpadding="0" cellspacing="3">
+        <table class="options-table" id="resource-table" ><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header" colspan="2">Resources - <span class="smaller"><a href="javascript:void0" id="mats-check-all">Check</a>/<a href="javascript:void0" id="mats-uncheck-all">Uncheck</a> All</span></th>
             </tr>
@@ -260,7 +261,7 @@
             </tr>
             </td>
         </table>
-        <table class="options-table" cellpadding="0" cellspacing="3">
+        <table class="options-table" ><!--cellpadding="0" cellspacing="3"-->
             <tr id="end">
                 <td colspan="2"><button id="save-button">Save</button></td>
             </tr>

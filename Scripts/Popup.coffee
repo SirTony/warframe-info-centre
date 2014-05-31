@@ -9,7 +9,7 @@ htmlFormat = {
             {5} = mission description
             {6} = credit amount.
     ###
-    creditOnly: "<table id=\"alerts-table-{0}\" cellspacing=\"0\" cellpadding=\"3\">
+    creditOnly: "<table id=\"alerts-table-{0}\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
     <tr>
         <td class=\"location\">{2} - <em>{3} {4}</em></td>
         <td class=\"time-left\">{1}</td>
@@ -32,7 +32,7 @@ htmlFormat = {
             {6} = mission description
             {7} = credit amount.
     ###
-    extraReward: "<table id=\"alerts-table-{0}\" cellspacing=\"0\" cellpadding=\"3\">
+    extraReward: "<table id=\"alerts-table-{0}\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
     <tr>
         <td colspan=\"2\" class=\"time-left\">{1}</td>
     </tr>
@@ -48,7 +48,7 @@ htmlFormat = {
     </tr>
 </table>",
     
-    noAlerts: "<table id=\"alerts-table-0\" cellspacing=\"0\" cellpadding=\"3\">
+    noAlerts: "<table id=\"alerts-table-0\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
     <tr>
         <td style=\"text-align: center;\"><em>No alerts at this time.</em></td>
     </tr>
@@ -73,7 +73,7 @@ htmlFormat = {
         {15} - Defending faction CSS class.
         {16} - Rewards.
     ###
-    invasion: "<table title=\"Click for more information.\" class=\"ai-conflict\" id=\"invasion-table-{0}\" cellpadding=\"3\" cellspacing=\"0\" border=\"0\">
+    invasion: "<table title=\"Click for more information.\" class=\"ai-conflict\" id=\"invasion-table-{0}\" ><!--cellpadding=\"3\" cellspacing=\"0\" border=\"0\"-->
     <tr>
         <th colspan=\"2\" class=\"centre\">{1} <em class=\"extra\">- {2}</em></th>
     </tr>
@@ -100,7 +100,7 @@ htmlFormat = {
     {16}
 </table>",
 
-    noInvasions: "<table id=\"invasion-table-0\" cellspacing=\"0\" cellpadding=\"3\">
+    noInvasions: "<table id=\"invasion-table-0\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
     <tr>
         <td style=\"text-align: center;\"><em>No invasions at this time.</em></td>
     </tr>

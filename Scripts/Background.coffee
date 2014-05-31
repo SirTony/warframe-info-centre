@@ -4,8 +4,6 @@ sound = null
 activeNotifications = [ ]
 newItemsCount = 0
 
-DEBUG = on
-
 appDefaults = {
     platform: "PC",
     updateInterval: 60,
@@ -66,7 +64,7 @@ setup = ->
                 delete activeNotifications[activeNotifications.indexOf id]
 
     chrome.runtime.onMessage.addListener ( message, sender, reply ) ->
-        if not DEBUG and not ( sender.id is "khlkgkdlljlbgpjflpjampkadjnldfec" )
+        if not App.Debug and not ( sender.id is "khlkgkdlljlbgpjflpjampkadjnldfec" )
             console.error "Unregocnized sender: {0}".format sender.id
             return
 

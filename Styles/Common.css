@@ -12,3 +12,11 @@ body
     font-family: Ubuntu, "Trebuchet MS", Verdana, Arial;
     background-color: #131923;
 }
+
+table
+{
+    border-collapse: separate;
+    border-spacing: 3px;
+}
+
+th, td { padding: 0; }
