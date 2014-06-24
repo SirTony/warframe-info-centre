@@ -8,6 +8,9 @@ Scripts/Popup.js
 Scripts/Settings.js
 Scripts/App.js
 
+#Export dir
+[Bb]in/
+
 #Ignore all compiled LESS files
 Styles/Popup.css
 
