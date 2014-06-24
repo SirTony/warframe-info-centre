@@ -27,7 +27,7 @@ WIC is primarily written in CoffeeScript, which has to be compiled to JavaScript
 1. Install [Node.js](http://nodejs.org/) if you do not already have it.
 2. Install [CoffeeScript](http://coffeescript.org/) with `npm install -g coffee-script`.
 3. Install [LESS](http://lesscss.org/) with `npm install -g less`.
-4. Navigate to the repository's root directory and run `cake -a build` from the command line to build all **.coffee** and **.less** files.
+4. Navigate to the repository's root directory and run `cake build` from the command line to build all **.coffee** and **.less** files.
 5. Run `cake export` from the command line to export all necessary files to `Bin` directory.
 
 ### Troubleshooting

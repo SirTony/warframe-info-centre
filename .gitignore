@@ -13,6 +13,8 @@ Scripts/App.js
 
 #Ignore all compiled LESS files
 Styles/Popup.css
+Styles/Common.css
+Styles/Settings.css
 
 #Keep old stuff and stuff the developer uses for his own purposes out of the repo.
 *.old

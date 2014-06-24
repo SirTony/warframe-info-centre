@@ -6,50 +6,48 @@ fs     = require "fs"
 #Set up command-line options.
 option "-d", "--debug", "Add debug information."
 option "-t", "--trace", "Add trace information."
-option "-l", "--less", "Only build LESS stylesheets."
-option "-s", "--scripts", "Only build CoffeeScript files."
-option "-a", "--all", "Build all files."
 
 #The real meat and potatoes, the tasks.
-task "build", "Build source files.", ( options ) ->
-    console.log options
-    files = fs.walk()
+task "build:scripts", "Build only CoffeeScript files.", ( options ) =>
+    console.log "Building JavaScript files..."
+    coffeeFiles = options.files.filter ( x ) => path.extname( x ).toLowerCase() is ".coffee"
     
-    if options?.coffee or options?.all
-        console.log "Building JavaScript files..."
-        coffeeFiles = files.filter ( x ) => path.extname( x ).toLowerCase() is ".coffee"
-        
-        buildAppFile options
-        
-        for i in [ 0 ... coffeeFiles.length ] by 1
-            file = coffeeFiles[i]
-            newFile = file.replace /\.coffee$/i, ".js"
-            
-            console.log "  - Building #{path.basename newFile}..."
-            
-            raw = fs.readFileSync file, encoding: "utf8"
-            compiled = coffee.compile raw, { bare: true }
-            fs.writeFileSync newFile, compiled, encoding: "utf8"
+    buildAppFile options
     
-    if options?.less or options?.all
-        console.log "Building LESS files..."
-        lessFiles = files.filter ( x ) => path.extname( x ).toLowerCase() is ".less"
+    for i in [ 0 ... coffeeFiles.length ] by 1
+        file = coffeeFiles[i]
+        newFile = file.replace /\.coffee$/i, ".js"
         
-        while lessFiles.length > 0
-            file = lessFiles[0]
-            newFile = file.replace /\.less$/i, ".css"
-            
-            console.log "  - Building #{path.basename newFile}..."
-            
-            raw = fs.readFileSync file, encoding: "utf8"
-            
-            less.render raw, ( e, compiled ) =>
-                return console.log e if e
-                
-                fs.writeFileSync newFile, compiled, encoding: "utf8"
-                lessFiles.shift()
+        console.log "  - Building #{path.basename newFile}..."
+        
+        raw = fs.readFileSync file, encoding: "utf8"
+        compiled = coffee.compile raw, { bare: true }
+        fs.writeFileSync newFile, compiled, encoding: "utf8"
 
-task "export", "Export compiled files for packaging.", ( options ) ->
+task "build:styles", "Build only LESS files.", ( options ) =>
+    console.log "Building LESS files..."
+    lessFiles = options.files.filter ( x ) => path.extname( x ).toLowerCase() is ".less"
+    
+    while lessFiles.length > 0
+        file = lessFiles[0]
+        newFile = file.replace /\.less$/i, ".css"
+        
+        console.log "  - Building #{path.basename newFile}..."
+        
+        raw = fs.readFileSync file, encoding: "utf8"
+        
+        less.render raw, ( e, compiled ) =>
+            return console.log e if e
+            
+            fs.writeFileSync newFile, compiled, encoding: "utf8"
+            lessFiles.shift()
+
+task "build", "Build source files.", ( options ) =>
+    options.files = fs.walk()
+    invoke "build:scripts", options
+    invoke "build:styles", options
+
+task "export", "Export compiled files for packaging.", ( options ) =>
     console.log "Exporting files..."
     
     files = fs.walk().filter ( x ) => path.extname( x ).toLowerCase() in [ ".js", ".css", ".html", ".mp3", ".png", ".ttf", ".json" ]
@@ -74,6 +72,18 @@ task "export", "Export compiled files for packaging.", ( options ) ->
         fs.copyFile source, dest
     
     console.log "Finished exporting files."
+
+task "clean", "Cleans all compiled and exported files.", ( options ) =>
+    console.log "Cleaning build files..."
+    fs.deleteDirectory path.join path.resolve( __dirname ), "Bin"
+    rest = fs.walk().filter ( x ) => path.extname( x ).toLowerCase() in [ ".js", ".css" ]
+    
+    for i in [ 0 ... rest.length ] by 1
+        file = rest[i]
+        jquery = path.basename( file ).match( /jquery/i )?
+        
+        console.log "  - Removing #{path.basename file}." unless jquery
+        fs.unlinkSync file unless jquery
 
 #All functions are sync, because async code is a pain in the ass here.
 buildAppFile = ( options ) ->
@@ -108,7 +118,7 @@ buildAppFile = ( options ) ->
         VersionID: versionId,
         VersionString: "\"#{version.join '.'}\""
     
-    app = "var App = Object.freeze( {\n"
+    app = "const App = Object.freeze( {\n"
     
     for k, v of properties
         continue if not properties.hasOwnProperty k
@@ -150,7 +160,7 @@ fs.deleteDirectory = ( source ) ->
             return if not stat
             
             if stat.isDirectory()
-                deleteDirectory file
+                fs.deleteDirectory file
             else
                 fs.unlinkSync file
         
