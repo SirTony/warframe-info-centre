@@ -4,6 +4,9 @@ sound = null
 activeNotifications = [ ]
 newItemsCount = 0
 
+`const UPDATE_ALARM = "UPDATE_ALARM"`
+`const SWEEPER_ALARM = "SWEEPER_ALARM"`
+
 appDefaults = {
     platform: "PC",
     updateInterval: 60,
@@ -58,19 +61,19 @@ setup = ->
     console.log app.soundFile
     sound = new Audio app.soundFile
 
-    chrome.notifications.onClicked.addListener ( id ) ->
+    chrome.notifications.onClicked.addListener ( id ) =>
         if id in activeNotifications
-            chrome.notifications.clear id, ->
+            chrome.notifications.clear id, =>
                 delete activeNotifications[activeNotifications.indexOf id]
 
-    chrome.runtime.onMessage.addListener ( message, sender, reply ) ->
-        if not App.Debug and not ( sender.id is "khlkgkdlljlbgpjflpjampkadjnldfec" )
+    chrome.runtime.onMessage.addListener ( message, sender, reply ) =>
+        if not App.Debug and sender isnt chrome.runtime.id
             console.error "Unregocnized sender: {0}".format sender.id
             return
 
         switch message.action
             when "UPDATE_SETTINGS"
-                AppSettings.getAll ( dict ) ->
+                AppSettings.getAll ( dict ) =>
                     console.log app
 
                     if not ( dict.platform is app.platform )
@@ -80,7 +83,7 @@ setup = ->
                     app = dict
                     sound = new Audio app.soundFile
                     
-                    LocalSettings.update local, ->
+                    LocalSettings.update local, =>
                         reply { status: yes }
                         Api.platform = app.platform
                         update yes
@@ -95,9 +98,16 @@ setup = ->
 
     if shouldUpdate()
         update()
+
+    alarmOpts =
+        periodInMinutes: 1
+        delayInMinutes:  1
     
-    setInterval update, ( app.updateInterval * 1000 ) - 500
-    setInterval policeOldData, 30000 #Remove every 30 seconds.
+    chrome.alarms.create UPDATE_ALARM, alarmOpts
+    chrome.alarms.create SWEEPER_ALARM, alarmOpts
+
+    #setInterval update, ( app.updateInterval * 1000 ) - 500
+    #setInterval policeOldData, 30000 #Remove every 30 seconds.
     return
 
 update = ( force = no )->
@@ -199,41 +209,28 @@ update = ( force = no )->
 loadConfig = ( reload ) ->
     console.trace "Loading configuration (reload: {0}).".format( if reload is yes then "yes" else "no" )
     
-    ###
-        For anyone wondering about all the silly empty return
-        statements in this function, refer to ./Lib/Settings.coffee
-        on lines 15 to 21 for the reason they're needed.
-    ###
-    
-    AppSettings.getAll ( appRes ) ->
-        if isUndefined( appRes ) or appRes is null or not ( keys( appRes ).length is keys( appDefaults ).length )
-            AppSettings.update appDefaults, ->
-                AppSettings.getAll ( appRes2 ) ->
+    #TODO: unravel this horrid mess with promises.
+    AppSettings.getAll ( appRes ) =>
+        if not appRes? or not ( keys( appRes ).length is keys( appDefaults ).length )
+            AppSettings.update appDefaults, =>
+                AppSettings.getAll ( appRes2 ) =>
                     app = appRes2
-                    return
-                return
         else
             app = appRes
         
-        LocalSettings.getAll ( locRes ) ->
-            if isUndefined( locRes ) or locRes is null or not ( keys( locRes ).length is keys( localDefaults ).length )
-                LocalSettings.update localDefaults, ->
-                    LocalSettings.getAll ( locRes2 ) ->
+        LocalSettings.getAll ( locRes ) =>
+            if not locRes? or not ( keys( locRes ).length is keys( localDefaults ).length )
+                LocalSettings.update localDefaults, =>
+                    LocalSettings.getAll ( locRes2 ) =>
                         local = locRes2
                     
                         if reload is no
                             setup()
-                            return
-                    return
             else
                 local = locRes
                 
                 if reload is no
                     setup()
-            
-            return
-        return
-    return
 
 __resetCheck = {
     silent: no,
@@ -241,6 +238,9 @@ __resetCheck = {
 }
 
 clearData = ( quick = no ) ->
+    if not App.Debug
+        return
+
     if quick is yes and __resetCheck.silent is no
         __resetCheck.silent = yes;
     
@@ -258,6 +258,13 @@ clearData = ( quick = no ) ->
     return
 
 try
+    chrome.alarms.onAlarm.addListener ( alarm ) =>
+        switch alarm.name
+            when UPDATE_ALARM
+                update yes
+            when SWEEPER_ALARM
+                policeOldData()
+
     loadConfig no
 catch e
     type = Exception.getType e

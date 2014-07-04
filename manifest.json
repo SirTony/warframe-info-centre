@@ -5,11 +5,11 @@
     
     "name":        "Warframe Info Centre",
     "description": "This extension keeps you updated with the latest alerts and invasions in Warframe.",
-    "version": "0.2.3.65",
+    "version": "0.2.3.66",
     "author":      "Tony Montana (/u/SirNastyPants)",
     
     "offline_enabled":        false,
-    "minimum_chrome_version": "22",
+    "minimum_chrome_version": "28",
     "update_url": "https://github.com/Syke94/warframe-info-centre/blob/update/update.xml",
     
     "icons": {
@@ -40,6 +40,7 @@
     "permissions": [
         "http://deathsnacks.com/wf/*",
         "storage",
-        "notifications"
+        "notifications",
+        "alarms"
     ]
 }

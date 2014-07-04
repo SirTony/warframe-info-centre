@@ -1,3 +1,4 @@
+isUndefined = ( x ) -> typeof x is "undefined"
 isString    = ( x ) -> typeof x is "string"
 isObject    = ( x ) -> typeof x is "object"
 isFunction  = ( x ) -> typeof x is "function"
@@ -6,6 +7,13 @@ isUndefined = ( x ) -> typeof x is "undefined"
 isBoolean   = ( x ) -> typeof x is "boolean"
 
 now = -> Math.floor new Date().getTime() / 1000
+
+except = ( fn ) ->
+    try
+        fn?()
+    catch e
+        Log.Error if e.getMessage? then e.getMessage() else e.toString()
+        Log.Trace e
 
 Function::property = ( prop, fn, isStatic = no ) ->
     target = if isStatic then self else self::
@@ -30,25 +38,20 @@ Number::between = ( lo, hi, inclusive = yes ) ->
     
     return if inclusive is yes then @ >= lo and @ <= hi else @ > lo and @ < hi
 
-String::format = ->
-    if arguments.length is 0
+String::format = ( args... ) ->
+    if args.length is 0
         return @
     
-    formatters = @.match( /(\{\d+\})/g )
-    
-    if( formatters is null or formatters.length is 0 )
-        return @
+    formatted = @.replace /(\{)?\{(\d+)\}(?!\})/g, ( $0, $1 ) =>
+        return $0 if $1?
 
-    if formatters.length is 1
-        return @.replace "{0}", arguments[0].toString()
-    
-    formatted = @
-    for i in [ 0 .. formatters.length - 1 ]
-        j = parseInt( formatters[i].replace( "{", "" ).replace( "}", "" ) )
-        _v = if not isUndefined( arguments[j] ) and not isUndefined( arguments[j].toString ) then arguments[j].toString() else arguments[j]
-        formatted = formatted.replace formatters[i], _v
-    
-    return formatted
+        index = $0.replace /(?:\{|\})/g, ""
+        val   = args[index].toString?() if args[index]?
+
+        return val if val?
+        return ""
+
+    return formatted.replace( "{{", "{" ).replace "}}", "}"
 
 timeSpan = ( secs ) ->
     if not isNumber secs
@@ -72,16 +75,11 @@ timeSpan = ( secs ) ->
 
 owns = ( self, prop ) -> self.hasOwnProperty prop
 
-selectKeys = ->
-    if arguments.length is 1
-        return arguments[0]
-    
-    self = arguments[0]
+selectKeys = ( self, keys... ) ->
     newObject = { }
-    args = values( arguments ).slice 1
     
     for k, v of self
-        if k in args
+        if k in keys
             newObject[k] = v
     
     return newObject

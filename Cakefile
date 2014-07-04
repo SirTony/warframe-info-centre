@@ -75,7 +75,10 @@ task "export", "Export compiled files for packaging.", ( options ) =>
 
 task "clean", "Cleans all compiled and exported files.", ( options ) =>
     console.log "Cleaning build files..."
-    fs.deleteDirectory path.join path.resolve( __dirname ), "Bin"
+    
+    bin = path.join path.resolve( __dirname ), "Bin"
+    
+    fs.deleteDirectory bin if fs.existsSync bin
     rest = fs.walk().filter ( x ) => path.extname( x ).toLowerCase() in [ ".js", ".css" ]
     
     for i in [ 0 ... rest.length ] by 1
