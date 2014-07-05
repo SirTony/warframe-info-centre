@@ -23,7 +23,6 @@ file_put_contents( "manifest.json", $c );
 exec( "git add manifest.json" );
 
 $dirs = [ getcwd() ];
-$allowed = [ "py", "json", "php", "js", "coffee" ];
 
 while( sizeof( $dirs ) > 0 )
 {
@@ -41,9 +40,7 @@ while( sizeof( $dirs ) > 0 )
             continue;
         }
         
-        $ext = pathinfo( $entry, PATHINFO_EXTENSION );
-        
-        if( !in_array( $ext, $allowed ) )
+        if( !preg_match( "/\.?(?:php|py|json|coffee|js|cakefile|html|less|css)$/i", $entry ) )
             continue;
         
         $path = implode( DIRECTORY_SEPARATOR, [ $dir, $entry ] );

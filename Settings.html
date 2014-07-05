@@ -4,7 +4,11 @@
     <head>
         <title>Warframe Info Centre</title>
         <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta http-equiv="pragma" content="no-cache" />
+        <meta http-equiv="expires" content="0" />
         <script type="text/javascript" src="Scripts/App.js"></script>
+        <script type="text/javascript" src="Scripts/Lib/Log.js"></script>
         <script type="text/javascript" src="Scripts/Lib/jQuery.js"></script>
         <script type="text/javascript" src="Scripts/Lib/Exceptions.js"></script>
         <script type="text/javascript" src="Scripts/Lib/Extensions.js"></script>
@@ -66,27 +70,27 @@
             </tr>
             <tr class="section">
                 <td><input type="checkbox" id="show-notifications"/><label for="show-notifications"><span></span>Show notifications.</label></td>
-                <!--<td><input type="checkbox" id="notify-spam" /><label for="notify-spam"><span></span>Consolidate notifications.</label></td>-->
+                <td><input type="checkbox" id="notify-spam" /><label for="notify-spam"><span></span>Consolidate notifications.</label></td>
             </tr>
-            <tr>
+            <tr style="display: none;">
                 <th class="section-header" colspan="2">Alerts</th>
             </tr>
-            <tr class="section">
+            <tr class="section" style="display: none;">
                 <td><input type="checkbox" id="money-alert"/><label for="money-alert"><span></span>Show credit-only alerts.</label></td>
                 <td>
                     <label for="money-amount">Minimum credit amount:</label>
                     <input type="number" id="money-amount" value="5000" min="1" max="99999" />
                 </td>
             </tr>
-            <tr class="section">
+            <tr class="section" style="display: none;">
                 <td><input type="checkbox" id="track-blueprints"/><label for="track-blueprints"><span></span>Show blueprint alerts.</label></td>
                 <td><input type="checkbox" id="track-nightmare-mods"/><label for="track-nightmare-mods"><span></span>Show nightmare alerts.</label></td>
             </tr>
-            <tr class="section">
+            <tr class="section" style="display: none;">
                 <td><input type="checkbox" id="track-resources"/><label for="track-resources"><span></span>Show resource alerts.</label></td>
             </tr>
         </table>
-        <table class="options-table" id="blueprint-table" ><!--cellpadding="0" cellspacing="3"-->
+        <table class="options-table" id="blueprint-table" style="display: none;"><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header" colspan="2">Blueprints - <span class="smaller"><a href="javascript:void0" id="bp-check-all">Check</a>/<a href="javascript:void0" id="bp-uncheck-all">Uncheck</a> All</span></th>
             </tr>
@@ -195,7 +199,7 @@
                 <td><input type="checkbox" id="scindo-dagger-bp" value="Dagger Axe Skin Blueprint (Scindo)"/><label for="scindo-dagger-bp"><span></span>Dagger Axe Skin Blueprint (Scindo)</label></td>
             </tr>
         </table>
-        <table class="options-table" id="mod-table" ><!--cellpadding="0" cellspacing="3"-->
+        <table class="options-table" id="mod-table" style="display: none;"><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header" colspan="2">Nightmare Mods - <span class="smaller"><a href="javascript:void0" id="mod-check-all">Check</a>/<a href="javascript:void0" id="mod-uncheck-all">Uncheck</a> All</span></th>
             </tr>
@@ -227,7 +231,7 @@
                 <td><input type="checkbox" id="lethaltorrent-mod" value="Lethal Torrent"/><label for="lethaltorrent-mod"><span></span>Lethal Torrent</label></td>
             </tr>
         </table>
-        <table class="options-table" id="resource-table" ><!--cellpadding="0" cellspacing="3"-->
+        <table class="options-table" id="resource-table" style="display: none;"><!--cellpadding="0" cellspacing="3"-->
             <tr>
                 <th class="section-header" colspan="2">Resources - <span class="smaller"><a href="javascript:void0" id="mats-check-all">Check</a>/<a href="javascript:void0" id="mats-uncheck-all">Uncheck</a> All</span></th>
             </tr>
@@ -261,7 +265,7 @@
             </tr>
             </td>
         </table>
-        <table class="options-table" ><!--cellpadding="0" cellspacing="3"-->
+        <table class="options-table"><!--cellpadding="0" cellspacing="3"-->
             <tr id="end">
                 <td colspan="2"><button id="save-button">Save</button></td>
             </tr>

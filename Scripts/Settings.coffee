@@ -54,7 +54,7 @@ save = ->
         platform: $( "#platform-selector" ).val(),
         updateInterval: if interval.between( 60, 500 ) then interval else 60,
         notify: $( "#show-notifications" ).is( ":checked" ),
-        #noSpam: $( "#notify-spam" ).is( ":checked" ),
+        noSpam: $( "#notify-spam" ).is( ":checked" ),
         playSound: $( "#play-sound" ).is( ":checked" ),
         soundFile: $( "#mp3-source" ).prop( "src" ),
         alerts: {
@@ -86,7 +86,7 @@ display = ->
         $( "#platform-selector" ).val config.platform
         $( "#update-interval" ).val config.updateInterval
         $( "#show-notifications" ).prop "checked", config.notify
-        #$( "#notify-spam" ).prop "checked", config.noSpam
+        $( "#notify-spam" ).prop "checked", config.noSpam
         $( "#play-sound" ).prop "checked", config.playSound
         $( "#money-alert" ).prop "checked", config.alerts.showCreditOnly
         $( "#money-amount" ).val config.alerts.minimumCash
@@ -99,7 +99,7 @@ display = ->
         for x in __all
             console.log x
             $( "#" + x.ID ).prop "checked", (yes)
-        
+        ###
         if config.alerts.showBlueprint is (yes)
             $( "#blueprint-table" ).show()
         else
@@ -114,7 +114,7 @@ display = ->
             $( "#resource-table" ).show()
         else
             $( "#resource-table" ).hide()
-
+        ###
         $( "#mp3-source" ).attr( "src", config.soundFile ).detach().appendTo "#audio-preview"
         
         if config.soundFile.indexOf( "chrome-extension://" ) is 0 #Default MP3

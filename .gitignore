@@ -3,6 +3,7 @@ Scripts/Lib/Settings.js
 Scripts/Lib/Exceptions.js
 Scripts/Lib/Extensions*.js
 Scripts/Lib/Api.js
+Scripts/Lib/Log.js
 Scripts/Background.js
 Scripts/Popup.js
 Scripts/Settings.js

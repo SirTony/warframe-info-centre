@@ -130,7 +130,7 @@ invasionsTracker = ->
     ###
         Invasions are re-built completely every 60 seconds.
     ###
-    LocalSettings.getAll ( x ) -> buildInvasions x.invasions
+    LocalSettings.getAll ( x ) => buildInvasions x.invasions
 
 alertsTracker = ->
 
@@ -149,7 +149,7 @@ alertsTracker = ->
         LocalSettings.getAll ( x ) ->
             __new = 0
             for k, v of x.alerts
-                if not owns( x.alerts, k ) or not ( k in trackedAlerts )
+                if not owns( x.alerts, k ) or k not in trackedAlerts
                     continue
                 else
                     trackedAlerts[k] = v
@@ -173,14 +173,10 @@ alertsTracker = ->
         
         if $( "#alerts-container" ).children().length is 0
             $( "#alerts-container" ).html htmlFormat.noAlerts
-        
-    return
 
 
 buildInvasions = ( object ) ->
     inner = ""
-
-    console.log "building invasions"
 
     for k, v of object
         if not owns object, k
@@ -239,13 +235,13 @@ buildAlerts = ( object ) ->
     inner = ""
 
     for k, v of object
-        try
+        except =>
             if not owns object, k
-                continue
+                return
                 
             diff = v.expireTime - now()
                 
-            if not ( k in trackedAlerts )
+            if k not in trackedAlerts
                 trackedAlerts[k] = v
                 
             type = "{0} {1}".format v.faction, v.type
@@ -253,21 +249,21 @@ buildAlerts = ( object ) ->
             range = "Lv. {0}-{1}".format v.levelRange.low, v.levelRange.high
                 
             if v.rewards.extra.length > 0
-                inner += htmlFormat.extraReward.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.rewards.extra[0], v.message, v.rewards.credits ) 
+                inner += htmlFormat.extraReward.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.rewards.extra[0], v.message, v.rewards.credits )
             else
-                inner += htmlFormat.creditOnly.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.message, v.rewards.credits ) 
-        catch e
-            console.log e.stack.toString()
+                inner += htmlFormat.creditOnly.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.message, v.rewards.credits )
         
     if inner is ""
         inner = htmlFormat.noAlerts
             
     $( "#alerts-container" ).html inner
 
-$( document ).ready ->
-    chrome.runtime.sendMessage { action: "RESET_ALERTS_COUNTER" }, ( response ) ->
-        if isUndefined( response ) or isUndefined( response.status ) or response.status is no
-            console.error "Invalid message."
+$( document ).ready =>
+    $( "#footer #version" ).text "#{App.Version.toString()} (beta)"
+
+    chrome.runtime.sendMessage action: "RESET_ALERTS_COUNTER", ( response ) =>
+        if not response? or not response.status? or response.status is no
+            Log.Error "Invalid message."
 
     chrome.browserAction.setBadgeText { text: "" }
     
@@ -277,13 +273,12 @@ $( document ).ready ->
     $( "#alerts-expander" ).rotate alertsValue
     $( "#invasions-expander" ).rotate invasionsValue
     
-    slideOpts = {
-        duration: 500,
-        queue: ( no )
-    }
+    slideOpts =
+        duration: 500
+        queue: no
     
-    $( "#alerts-expander" ).rotate {
-        bind: {
+    $( "#alerts-expander" ).rotate
+        bind:
             click: ->
                 if alertsValue is 180
                     alertsValue = 360
@@ -292,19 +287,15 @@ $( document ).ready ->
                 else
                     alertsValue = 360
                 
-                $( @ ).rotate { animateTo: alertsValue, duration: 900 }
+                $( @ ).rotate animateTo: alertsValue, duration: 900
                 
                 if alertsValue is 360
                     $( "#alerts-container" ).slideDown slideOpts
-                    return
                 else
                     $( "#alerts-container" ).slideUp slideOpts
-                    return
-        }
-    }
     
-    $( "#invasions-expander" ).rotate {
-        bind: {
+    $( "#invasions-expander" ).rotate
+        bind:
             click: ->
                 if invasionsValue is 180
                     invasionsValue = 360
@@ -313,18 +304,14 @@ $( document ).ready ->
                 else
                     invasionsValue = 360
                 
-                $( @ ).rotate { animateTo: invasionsValue, duration: 900 }
+                $( @ ).rotate animateTo: invasionsValue, duration: 900
                 
                 if invasionsValue is 360
                     $( "#invasions-container" ).slideDown slideOpts
-                    return
                 else
                     $( "#invasions-container" ).slideUp slideOpts
-                    return
-        }
-    }
     
-    LocalSettings.getAll ( x ) ->
+    LocalSettings.getAll ( x ) =>
         inner = ""
 
         buildAlerts x.alerts
@@ -332,4 +319,3 @@ $( document ).ready ->
 
         setInterval alertsTracker, 500 #half second
         setInterval invasionsTracker, 60000 #one minute
-    return

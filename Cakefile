@@ -4,8 +4,9 @@ path   = require "path"
 fs     = require "fs"
 
 #Set up command-line options.
-option "-d", "--debug", "Add debug information."
-option "-t", "--trace", "Add trace information."
+option "-d", "--debug",   "Add debug information."
+option "-t", "--trace",   "Add trace information."
+option "-v", "--verbose", "Additional logging information will be printed to the console."
 
 #The real meat and potatoes, the tasks.
 task "build:scripts", "Build only CoffeeScript files.", ( options ) =>
@@ -91,7 +92,37 @@ task "clean", "Cleans all compiled and exported files.", ( options ) =>
 #All functions are sync, because async code is a pain in the ass here.
 buildAppFile = ( options ) ->
     console.log "  - Building App.js..."
+    template = fs.readFileSync "App.js.template", encoding: "utf8"
+    regex = /\<\:([A-Z\$][A-Z0-9_]*)\:\>/gi
     
+    manifest = fs.readFileSync "manifest.json", encoding: "utf8"
+    version  = manifest.match( /"version":\s*"(\d+).(\d+).(\d+).(\d+)"/ )[1 ... 5].map ( x ) => +x
+    
+    versionId     = version[..].map ( x ) => Math.max 1, x
+    versionId[0] *= 100000
+    versionId[1] *= 10000
+    versionId[2] *= 100
+    
+    lookup =
+        IS_DEBUG:  options.debug   ? no,
+        IS_TRACE:  options.trace   ? no,
+        IS_CHATTY: options.verbose ? no,
+        
+        VERSION_MAJOR:    version[0],
+        VERSION_MINOR:    version[1],
+        VERSION_BUILD:    version[2],
+        VERSION_REVISION: version[3],
+        VERSION_ID:       versionId.reduce ( x, y ) => x + y
+        VERSION_STRING:   "\"#{[ version[0], version[1], version[2], version[3] ].join '.'}\""
+    
+    while regex.test template
+        template = template.replace regex, ( $0, $1 ) =>
+            replacement = lookup[$1]
+            return replacement ? ""
+    
+    fs.writeFileSync path.join( "Scripts", "App.js" ), template, encoding: "utf8"
+    
+    ###
     setter = ( name, indent = 1 ) ->
         padOnce  = " ".repeat indent * 4
         padTwice = " ".repeat indent * 8
@@ -129,8 +160,7 @@ buildAppFile = ( options ) ->
 
     app  = app.replace /[\r\n\t\s,]*$/, ""
     app += "\n} );"
-    
-    fs.writeFileSync path.join( "Scripts", "App.js" ), app, encoding: "utf8"
+    ###
 
 String::repeat = ( count ) -> new Array( count + 1 ).join @
 
