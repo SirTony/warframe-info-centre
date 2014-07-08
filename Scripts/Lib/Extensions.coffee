@@ -7,6 +7,17 @@ isUndefined = ( x ) -> typeof x is "undefined"
 isBoolean   = ( x ) -> typeof x is "boolean"
 
 now = -> Math.floor new Date().getTime() / 1000
+Math.randInt = ( max ) -> Math.floor Math.random() * max
+
+String.random = ( len = 5, chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".split "" ) ->
+    str = [ ]
+    str.push chars.sample() for _ in [ 0 ... len ]
+
+    return str.join ""
+
+Array::sample = ->
+    index = Math.randInt @.length - 1
+    return @[index]
 
 except = ( fn ) ->
     try

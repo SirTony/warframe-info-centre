@@ -4,6 +4,8 @@ Scripts/Lib/Exceptions.js
 Scripts/Lib/Extensions*.js
 Scripts/Lib/Api.js
 Scripts/Lib/Log.js
+Scripts/Lib/Message.js
+Scripts/Lib/Notification.js
 Scripts/Background.js
 Scripts/Popup.js
 Scripts/Settings.js

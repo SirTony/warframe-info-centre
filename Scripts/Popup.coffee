@@ -206,6 +206,7 @@ buildInvasions = ( object ) ->
     </td>
 </tr>"
 
+        #TODO: switch attacker/defender sides.
         inner += htmlFormat.invasion.format(
             k,
             "{0} ({1})".format( v.node, v.planet ),
@@ -240,6 +241,10 @@ buildAlerts = ( object ) ->
                 return
                 
             diff = v.expireTime - now()
+
+            if diff <= -120
+                delete trackedAlerts[k]
+                return
                 
             if k not in trackedAlerts
                 trackedAlerts[k] = v
@@ -258,14 +263,36 @@ buildAlerts = ( object ) ->
             
     $( "#alerts-container" ).html inner
 
+injectDebugFeatures = ->
+    Log.Error "Only available in debug mode." unless App.Debug
+
+    htmlString = "<div id=\"debug\">
+    <button id=\"show-noty\">Show Notification</button>
+</div>"
+
+    scriptInject = "<script type=\"text/javascript\" src=\"Script/Lib/Notification.js\"></script>"
+    $( htmlString ).insertAfter $ "#footer"
+    $( "head" ).append $ scriptInject
+
+    $( "#show-noty" ).click =>
+        noty = new Notification "Test title.", "Test message."
+        noty.setType "basic"
+        noty.show 5
+
 $( document ).ready =>
     $( "#footer #version" ).text "#{App.Version.toString()} (beta)"
+    $( ".year" ).text new Date().getFullYear()
+
+    AppSettings.getAll ( dict ) =>
+        $( "#platform" ).text dict.platform
+
+    #injectDebugFeatures() if App.Debug
 
     chrome.runtime.sendMessage action: "RESET_ALERTS_COUNTER", ( response ) =>
         if not response? or not response.status? or response.status is no
             Log.Error "Invalid message."
 
-    chrome.browserAction.setBadgeText { text: "" }
+    chrome.browserAction.setBadgeText text: ""
     
     alertsValue = 360
     invasionsValue = 360

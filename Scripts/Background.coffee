@@ -1,10 +1,9 @@
 app   = null
 local = null
 sound = null
-activeNotifications = [ ]
 newItemsCount = 0
 
-`const UPDATE_ALARM = "UPDATE_ALARM"`
+`const UPDATE_ALARM  = "UPDATE_ALARM"`
 `const SWEEPER_ALARM = "SWEEPER_ALARM"`
 
 appDefaults = {
@@ -59,12 +58,8 @@ policeOldData = ->
         Log.Info "Removed #{count} old alerts."
 
 setup = ->
+    policeOldData()
     sound = new Audio app.soundFile
-
-    chrome.notifications.onClicked.addListener ( id ) =>
-        if id in activeNotifications
-            chrome.notifications.clear id, =>
-                delete activeNotifications[activeNotifications.indexOf id]
 
     chrome.runtime.onMessage.addListener ( message, sender, reply ) =>
         if not App.Debug and sender.id isnt chrome.runtime.id
@@ -74,7 +69,7 @@ setup = ->
             when "UPDATE_SETTINGS"
                 AppSettings.getAll ( dict ) =>
 
-                    if not ( dict.platform is app.platform )
+                    if dict.platform isnt app.platform
                         local.alerts = { }
                         newItemsCount = 0
                         
@@ -82,7 +77,7 @@ setup = ->
                     sound = new Audio app.soundFile
                     
                     LocalSettings.update local, =>
-                        reply { status: yes }
+                        reply status: yes
                         Api.platform = app.platform
                         update yes
             when "RESET_ALERTS_COUNTER"
@@ -111,9 +106,6 @@ setup = ->
 
 update = ( force = no )->
     if force is yes or shouldUpdate()
-        notifyOpts =
-            iconUrl: chrome.extension.getURL "/Icons/Warframe.Large.png"
-        
         Api.getAlerts ( dict ) =>
             local.lastUpdate = now()
                 
@@ -122,18 +114,14 @@ update = ( force = no )->
             newItemsCount += newKeys.length
 
             if app.notify
-                if app.noSpam or newKeys.length > 1
+                if app.noSpam and newKeys.length > 1
                     if newKeys.length is 0
                         return
 
-                    notifyOpts.type  = "list"
-                    notifyOpts.title = "#{newKeys.length} new alerts"
-                    notifyOpts.items = [ ]
-                    key = ""
+                    noty = new Notification "#{newKeys.length} new alerts"
+                    noty.setType "list"
 
                     for k in newKeys
-                        key = k
-
                         listObject =
                             title: "#{dict[k].node} (#{dict[k].planet}) - #{dict[k].faction} #{dict[k].type}"
                             message: "#{dict[k].message}\n#{dict[k].rewards.credits}"
@@ -142,36 +130,21 @@ update = ( force = no )->
                             other = dict[k].rewards.extra.join ", "
                             listObject.message += "\n#{other}"
 
-                        notifyOpts.items.push listObject
-                    Log.Write notifyOpts
-                    chrome.notifications.create key, notifyOpts, ( s ) =>
-                        Log.Info "Created."
-                        activeNotifications.push s
-                        setTimeout ( =>
-                            if s in activeNotifications
-                                chrome.notifications.clear s, =>
-                                    delete activeNotifications[activeNotifications.indexOf s]
-                        ), 10000
+                        noty.addItem listObject
+
+                    noty.show 10 #10 second timeout
                 else
                     if newKeys.length > 0
-                        notifyOpts.type = "basic"
-                        delete notifyOpts.items
-
                         for k in newKeys
-                            notifyOpts.title = "#{dict[k].node} (#{dict[k].planet}) - #{dict[k].faction} #{dict[k].type}"
-                            notifyOpts.message = "#{dict[k].message}\n#{dict[k].rewards.credits}"
+                            message = "#{dict[k].message}\n#{dict[k].rewards.credits}"
 
                             if dict[k].rewards.extra.length > 0
                                 other = dict[k].rewards.extra.join ", "
-                                notifyOpts.message += "\n#{other}"
+                                message += "\n#{other}"
 
-                            chrome.notifications.create k, notifyOpts, ( s ) =>
-                                activeNotifications.push s
-                                setTimeout ( =>
-                                    if s in activeNotifications
-                                        chrome.notifications.clear s, =>
-                                            delete activeNotifications[activeNotifications.indexOf s]
-                                ), 10000
+                            noty = new Notification "#{dict[k].node} (#{dict[k].planet}) - #{dict[k].faction} #{dict[k].type}", message
+                            noty.setType "basic"
+                            noty.show 10
                 
             for k, v of dict
                 if owns dict, k
@@ -185,18 +158,14 @@ update = ( force = no )->
                 newItemsCount += newKeys.length
 
                 if app.notify
-                    if app.noSpam or newKeys.length > 1
+                    if app.noSpam and newKeys.length > 1
                         if newKeys.length is 0
                             return
 
-                        notifyOpts.type  = "list"
-                        notifyOpts.title = "#{newKeys.length} new invasions"
-                        notifyOpts.items = [ ]
-                        key = ""
+                        noty = new Notification "#{newKeys.length} new invasions"
+                        noty.setType "list"
 
                         for k in newKeys
-                            key = k
-
                             listObject =
                                 title: "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})"
                                 message: "Rewards:\n"
@@ -207,38 +176,22 @@ update = ( force = no )->
                                 listObject.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
                                                       "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
 
-                            notifyOpts.items.push listObject
-                        Log.Write notifyOpts
-                        chrome.notifications.create key, notifyOpts, ( s ) =>
-                            Log.Write "Created."
-                            activeNotifications.push s
-                            setTimeout ( =>
-                                if s in activeNotifications
-                                    chrome.notifications.clear s, =>
-                                        delete activeNotifications[activeNotifications.indexOf s]
-                            ), 10000
+                            noty.addItem listObject
+                        noty.show 10
                     else
                         if newKeys.length > 0
-                            notifyOpts.type = "basic"
-                            delete notifyOpts.items
-
                             for k in newKeys
-                                notifyOpts.title = "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})"
-                                notifyOpts.message = "Rewards:\n"
+                                message = "Rewards:\n"
 
                                 if dict[k].factions.contestant.reward is null
-                                    notifyOpts.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}"
+                                    message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}"
                                 else
-                                    notifyOpts.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
-                                                          "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
+                                    message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
+                                               "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
 
-                                chrome.notifications.create k, notifyOpts, ( s ) =>
-                                    activeNotifications.push s
-                                    setTimeout ( =>
-                                        if s in activeNotifications
-                                            chrome.notifications.clear s, =>
-                                                delete activeNotifications[activeNotifications.indexOf s]
-                                    ), 10000
+                                noty = new Notification "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})", message
+                                noty.setType "basic"
+                                noty.show 10
 
                 local.invasions = dict
                 ###
@@ -249,9 +202,8 @@ update = ( force = no )->
                 LocalSettings.update local, =>
                     if newItemsCount > 0
                         chrome.browserAction.setBadgeText text: newItemsCount.toString()
-
-                    if app.playSound
-                        sound.play()
+                        if app.playSound
+                            sound.play()
 
                 #End Api.getInvasions
 

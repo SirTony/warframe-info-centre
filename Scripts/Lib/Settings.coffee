@@ -23,16 +23,13 @@ class Settings
     #Get a single value by name.
     getValue: ( name, callback ) ->
         if not isString name
-            throw new AppException ""
+            throw new ArgumentException "Expected first parameter to be a string, got {0}".format typeof name
 
-        if not isFunction callback
-            throw new AppException ""
-
-        @storage.get name, ( x ) =>
+        @storage.get [ name ], ( x ) =>
             if chrome.runtime.lastError?
                 throw new StorageException chrome.runtime.lastError.message
             else
-                callback? x
+                callback? x["name"]
     
     ###
         getValues is a variadic function with the signature: void getValues( string ..., function callback );
@@ -40,7 +37,7 @@ class Settings
     getValues: ( values..., fn ) ->
         for arg in values
             if not isString arg
-                throw new ArgumentException "Expected first {0} parameters to be of type string, got {1}".format args.length - 1, args.map(  ( x ) -> typeof x ).join ", "
+                throw new ArgumentException "Expected first {0} parameters to be of type string, got {1}".format values.length, values.map(  ( x ) -> typeof x ).join ", "
         
         @storage.get values, ( x ) =>
             if chrome.runtime.lastError?
@@ -49,9 +46,6 @@ class Settings
                 fn? x
     
     getAll: ( callback ) ->
-        if not isFunction callback
-            throw new ArgumentException "Expected parameter 1 to be a function, got {0}.".format typeof callback
-        
         @storage.get null, ( x ) =>
             if chrome.runtime.lastError?
                 throw new StorageException chrome.runtime.lastError.message
@@ -61,9 +55,6 @@ class Settings
     update: ( data, callback ) ->
         if not isObject data
             throw new ArgumentException "Expected parameter 1 to be an object, got {0}.".format typeof data
-        
-        if not isFunction callback
-            throw new ArgumentException "Expected parameter 2 to a function, got {0}.".format typeof callback
         
         @storage.set data, =>
             if chrome.runtime.lastError?
