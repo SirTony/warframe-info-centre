@@ -9,6 +9,7 @@ newItemsCount = 0
 appDefaults = {
     platform: "PC",
     updateInterval: 60,
+    experimental: no,
     notify: yes,
     noSpam: yes,
     playSound: no,
@@ -57,10 +58,39 @@ policeOldData = ->
     LocalSettings.update local, =>
         Log.Info "Removed #{count} old alerts."
 
+onUpdateSettings = ->
+    AppSettings.getAll ( dict ) =>
+        if dict.platform isnt app.platform
+            local.alerts = { }
+            local.invasions = { }
+
+        app = dict
+        sound = new Audio app.soundFile
+
+        LocalSettings.update local, =>
+            Api.platform = app.platform
+            update yes
+
+onResetAlerts = ->
+    newItemsCount = 0
+
+onShowNotification = ->
+    unless App.Debug
+        Log.Error "Only available in debug mode."
+        return
+
+    noty = new Notification "Test notification.", "Test notification message."
+    noty.show 5
+
 setup = ->
     policeOldData()
     sound = new Audio app.soundFile
 
+    Message.on "UPDATE_SETTINGS",      onUpdateSettings
+    Message.on "RESET_ALERTS_COUNTER", onResetAlerts
+    Message.on "DEBUG_NOTIFY",         onShowNotification if App.Debug
+
+    ###
     chrome.runtime.onMessage.addListener ( message, sender, reply ) =>
         if not App.Debug and sender.id isnt chrome.runtime.id
             Log.Error "Unregocnized sender: {0}".format sender.id
@@ -88,9 +118,9 @@ setup = ->
                     action: message.action
                     status: no
                     message: "Unrecognised action '{0}'.".format message.action
+    ###
 
-    if shouldUpdate()
-        update()
+    update() if shouldUpdate()
 
     mins = Math.max Math.floor 1, app.updateInterval / 60
     alarmOpts =
@@ -105,6 +135,13 @@ setup = ->
     return
 
 update = ( force = no )->
+    finish = =>
+        LocalSettings.update local, =>
+            if newItemsCount > 0
+                chrome.browserAction.setBadgeText text: newItemsCount.toString()
+                if app.playSound
+                    sound.play()
+
     if force is yes or shouldUpdate()
         Api.getAlerts ( dict ) =>
             local.lastUpdate = now()
@@ -149,61 +186,54 @@ update = ( force = no )->
             for k, v of dict
                 if owns dict, k
                     local.alerts[k] = v
-             
+            
+            finish() unless app.experimental
             #End Api.getAlerts
 
-            Api.getInvasions ( dict ) =>
-                currentKeys = keys local.invasions
-                newKeys = keys( dict ).filter ( x ) => x not in currentKeys
-                newItemsCount += newKeys.length
+            if app.experimental
+                Api.getInvasions ( dict ) =>
+                    currentKeys = keys local.invasions
+                    newKeys = keys( dict ).filter ( x ) => x not in currentKeys
+                    newItemsCount += newKeys.length
 
-                if app.notify
-                    if app.noSpam and newKeys.length > 1
-                        if newKeys.length is 0
-                            return
+                    if app.notify
+                        if app.noSpam and newKeys.length > 1
+                            if newKeys.length is 0
+                                return
 
-                        noty = new Notification "#{newKeys.length} new invasions"
-                        noty.setType "list"
+                            noty = new Notification "#{newKeys.length} new invasions"
+                            noty.setType "list"
 
-                        for k in newKeys
-                            listObject =
-                                title: "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})"
-                                message: "Rewards:\n"
-
-                            if dict[k].factions.contestant.reward is null
-                                listObject.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}"
-                            else
-                                listObject.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
-                                                      "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
-
-                            noty.addItem listObject
-                        noty.show 10
-                    else
-                        if newKeys.length > 0
                             for k in newKeys
-                                message = "Rewards:\n"
+                                listObject =
+                                    title: "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})"
+                                    message: "Rewards:\n"
 
                                 if dict[k].factions.contestant.reward is null
-                                    message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}"
+                                    listObject.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}"
                                 else
-                                    message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
-                                               "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
+                                    listObject.message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
+                                                          "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
 
-                                noty = new Notification "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})", message
-                                noty.setType "basic"
-                                noty.show 10
+                                noty.addItem listObject
+                            noty.show 10
+                        else
+                            if newKeys.length > 0
+                                for k in newKeys
+                                    message = "Rewards:\n"
 
-                local.invasions = dict
-                ###
-                for k, v of dict
-                    if dict.owns k
-                        local.invasions[k] = v
-                ###
-                LocalSettings.update local, =>
-                    if newItemsCount > 0
-                        chrome.browserAction.setBadgeText text: newItemsCount.toString()
-                        if app.playSound
-                            sound.play()
+                                    if dict[k].factions.contestant.reward is null
+                                        message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}"
+                                    else
+                                        message += "\t#{dict[k].factions.controlling.name} - #{dict[k].factions.controlling.reward}\n" +
+                                                   "\t#{dict[k].factions.contestant.name} - #{dict[k].factions.contestant.reward}"
+
+                                    noty = new Notification "#{dict[k].message} on #{dict[k].node} (#{dict[k].planet})", message
+                                    noty.setType "basic"
+                                    noty.show 10
+
+                    local.invasions = dict
+                    finish()
 
                 #End Api.getInvasions
 
@@ -246,7 +276,7 @@ __resetCheck =
     callCount: 1
 
 clearData = ( quick = no ) ->
-    if not App.Debug
+    unless App.Debug
         return
 
     if quick is yes and __resetCheck.silent is no
@@ -269,7 +299,7 @@ except ->
     chrome.alarms.onAlarm.addListener ( alarm ) =>
         switch alarm.name
             when UPDATE_ALARM
-                update yes
+                update() if shouldUpdate()
             when SWEEPER_ALARM
                 policeOldData()
 

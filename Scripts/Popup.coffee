@@ -92,7 +92,6 @@ htmlFormat = {
                 <img class=\"faction-badge\" src=\"Images/App/{6}.png\" height=\"20\" width=\"20\" />
             </div>
             <div style=\"width: {14}%;\" class=\"progress {15} left\">
-                <div class=\"{15}-{13}\"></div>
                 <img class=\"faction-badge\" src=\"Images/App/{3}.png\" height=\"20\" width=\"20\" />
             </div>
         </td>
@@ -270,40 +269,54 @@ injectDebugFeatures = ->
     <button id=\"show-noty\">Show Notification</button>
 </div>"
 
-    scriptInject = "<script type=\"text/javascript\" src=\"Script/Lib/Notification.js\"></script>"
     $( htmlString ).insertAfter $ "#footer"
-    $( "head" ).append $ scriptInject
 
     $( "#show-noty" ).click =>
-        noty = new Notification "Test title.", "Test message."
-        noty.setType "basic"
-        noty.show 5
+        Message.send "DEBUG_NOTIFY"
 
 $( document ).ready =>
-    $( "#footer #version" ).text "#{App.Version.toString()} (beta)"
-    $( ".year" ).text new Date().getFullYear()
-
-    AppSettings.getAll ( dict ) =>
-        $( "#platform" ).text dict.platform
-
-    #injectDebugFeatures() if App.Debug
-
-    chrome.runtime.sendMessage action: "RESET_ALERTS_COUNTER", ( response ) =>
-        if not response? or not response.status? or response.status is no
-            Log.Error "Invalid message."
-
-    chrome.browserAction.setBadgeText text: ""
-    
-    alertsValue = 360
-    invasionsValue = 360
-    
-    $( "#alerts-expander" ).rotate alertsValue
-    $( "#invasions-expander" ).rotate invasionsValue
-    
     slideOpts =
         duration: 500
         queue: no
-    
+
+    alertsValue = 360
+    invasionsValue = 360
+
+    setupExperimental = =>
+        $( "#invasions" ).remove()
+        $( "#experimental" ).show()
+
+        $( "#invasions-expander" ).rotate invasionsValue
+        $( "#invasions-expander" ).rotate
+            bind:
+                click: ->
+                    if invasionsValue is 180
+                        invasionsValue = 360
+                    else if invasionsValue is 360
+                        invasionsValue = 180
+                    else
+                        invasionsValue = 360
+                
+                    $( @ ).rotate animateTo: invasionsValue, duration: 900
+                
+                    if invasionsValue is 360
+                        $( "#invasions-container" ).slideDown slideOpts
+                    else
+                        $( "#invasions-container" ).slideUp slideOpts
+
+    $( "#footer #version" ).text "#{App.Version.toString()} (beta)"
+    $( ".year" ).text new Date().getFullYear()
+
+    injectDebugFeatures() if App.Debug
+
+    Message.send "RESET_ALERTS_COUNTER"
+    chrome.browserAction.setBadgeText text: ""
+
+    #chrome.runtime.sendMessage action: "RESET_ALERTS_COUNTER", ( response ) =>
+    #    if not response? or not response.status? or response.status is no
+    #        Log.Error "Invalid message."
+
+    $( "#alerts-expander" ).rotate alertsValue
     $( "#alerts-expander" ).rotate
         bind:
             click: ->
@@ -321,28 +334,15 @@ $( document ).ready =>
                 else
                     $( "#alerts-container" ).slideUp slideOpts
     
-    $( "#invasions-expander" ).rotate
-        bind:
-            click: ->
-                if invasionsValue is 180
-                    invasionsValue = 360
-                else if invasionsValue is 360
-                    invasionsValue = 180
-                else
-                    invasionsValue = 360
-                
-                $( @ ).rotate animateTo: invasionsValue, duration: 900
-                
-                if invasionsValue is 360
-                    $( "#invasions-container" ).slideDown slideOpts
-                else
-                    $( "#invasions-container" ).slideUp slideOpts
-    
-    LocalSettings.getAll ( x ) =>
-        inner = ""
+    AppSettings.getAll ( dict ) =>
+        setupExperimental() unless dict.experimental
+        $( "#platform" ).text dict.platform
 
-        buildAlerts x.alerts
-        buildInvasions x.invasions
+        LocalSettings.getAll ( x ) =>
+            inner = ""
 
-        setInterval alertsTracker, 500 #half second
-        setInterval invasionsTracker, 60000 #one minute
+            buildAlerts x.alerts
+            buildInvasions x.invasions if dict.experimental
+
+            setInterval alertsTracker, 500 #half second
+            setInterval invasionsTracker, 60000 if dict.experimental #one minute

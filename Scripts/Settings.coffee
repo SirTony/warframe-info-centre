@@ -53,6 +53,7 @@ save = ->
     dict = {
         platform: $( "#platform-selector" ).val(),
         updateInterval: if interval.between( 60, 500 ) then interval else 60,
+        experimental: $( "#experimental" ).is( ":checked" ),
         notify: $( "#show-notifications" ).is( ":checked" ),
         noSpam: $( "#notify-spam" ).is( ":checked" ),
         playSound: $( "#play-sound" ).is( ":checked" ),
@@ -69,22 +70,23 @@ save = ->
         resources: getCheckedOf( resourceIds )
     }
     
-    try
-        AppSettings.update dict, ->
+    except =>
+        AppSettings.update dict, =>
+            Message.send "UPDATE_SETTINGS"
+            ###
             chrome.runtime.sendMessage { action: "UPDATE_SETTINGS", config: dict }, ( response ) ->
                 if response.status is ( yes )
                     console.log "Updated settings."
                 else
                     console.error "Update settings failed.\n" + response.message
+            ###
             alert "Settings saved successfully."
-    catch e
-        console.error e.getMessage()
-        alert "Settings could not be updated. Please try again in a few moments."
 
 display = ->
     AppSettings.getAll ( config ) ->
         $( "#platform-selector" ).val config.platform
         $( "#update-interval" ).val config.updateInterval
+        $( "#experimental" ).prop "checked", config.experimental
         $( "#show-notifications" ).prop "checked", config.notify
         $( "#notify-spam" ).prop "checked", config.noSpam
         $( "#play-sound" ).prop "checked", config.playSound
