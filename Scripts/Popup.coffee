@@ -284,7 +284,7 @@ $( document ).ready =>
 
     setupExperimental = =>
         $( "#invasions" ).remove()
-        $( "#experimental" ).show()
+        $( "#experimental" ).hide()
 
         $( "#invasions-expander" ).rotate invasionsValue
         $( "#invasions-expander" ).rotate

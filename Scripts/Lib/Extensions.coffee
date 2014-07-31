@@ -27,7 +27,7 @@ except = ( fn ) ->
         Log.Trace e
 
 Function::property = ( prop, fn, isStatic = no ) ->
-    target = if isStatic then self else self::
+    target = if isStatic then @ else @::
     Object.defineProperty target, prop, fn
 
 Array::all = ( fn ) ->
