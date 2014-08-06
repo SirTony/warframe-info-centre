@@ -25,5 +25,5 @@ Message = new (
             if message.action not in keys callbacks
                 return
             else
-                callbacks[message.action]?()
+                callbacks[message.action]?( message )
 )

@@ -37,10 +37,20 @@ resourceIds = [
     "polymer-mat", "salvage-mat"
 ]
 
+isSaving = no
+
 getCheckedOf = ( what ) ->
     return what.map( ( id ) -> $( "#" + id ) ).filter( ( x ) -> x.is( ":checked" ) is yes ).map( ( x ) -> { ID: x.attr( "id" ), Value: x.val() } )
 
+updateSettings = ->
+    return unless isSaving
+    isSaving = no
+
+    alert "Settings updated successfully."
+    Message.send "UPDATE_SETTINGS"
+
 save = ->
+    isSaving = yes
     interval = parseInt( $( "#update-interval" ).val() )
     cash     = parseInt( $( "#money-amount" ).val() )
     
@@ -70,60 +80,53 @@ save = ->
         resources: getCheckedOf( resourceIds )
     }
     
-    except =>
-        AppSettings.update dict, =>
-            Message.send "UPDATE_SETTINGS"
-            ###
-            chrome.runtime.sendMessage { action: "UPDATE_SETTINGS", config: dict }, ( response ) ->
-                if response.status is ( yes )
-                    console.log "Updated settings."
-                else
-                    console.error "Update settings failed.\n" + response.message
-            ###
-            alert "Settings saved successfully."
+    Settings.update dict
+
+loadSettings = ( config ) ->
+    $( "#platform-selector" ).val config.platform
+    $( "#update-interval" ).val config.updateInterval
+    $( "#experimental" ).prop "checked", config.experimental
+    $( "#show-notifications" ).prop "checked", config.notify
+    $( "#notify-spam" ).prop "checked", config.noSpam
+    $( "#play-sound" ).prop "checked", config.playSound
+    $( "#money-alert" ).prop "checked", config.alerts.showCreditOnly
+    $( "#money-amount" ).val config.alerts.minimumCash
+    $( "#track-blueprints" ).prop "checked", config.alerts.showBlueprint
+    $( "#track-nightmare-mods" ).prop "checked", config.alerts.showNightmare
+    $( "#track-resources" ).prop "checked", config.alerts.showResource
+        
+    __all = [].concat config.blueprints, config.mods, config.resources
+        
+    for x in __all
+        console.log x
+        $( "#" + x.ID ).prop "checked", (yes)
+    ###
+    if config.alerts.showBlueprint is (yes)
+        $( "#blueprint-table" ).show()
+    else
+        $( "#blueprint-table" ).hide()
+        
+    if config.alerts.showNightmare is (yes)
+        $( "#mod-table" ).show()
+    else
+        $( "#mod-table" ).hide()
+        
+    if config.alerts.showResource is (yes)
+        $( "#resource-table" ).show()
+    else
+        $( "#resource-table" ).hide()
+    ###
+    $( "#mp3-source" ).attr( "src", config.soundFile ).detach().appendTo "#audio-preview"
+        
+    if config.soundFile.indexOf( "chrome-extension://" ) is 0 #Default MP3
+        fileName = config.soundFile.split( "/" ).slice( -1 ).pop()
+        $( "#default-sounds" ).val decodeURIComponent fileName
+    else
+        $( "#default-sounds" ).val "user-defined"
 
 display = ->
-    AppSettings.getAll ( config ) ->
-        $( "#platform-selector" ).val config.platform
-        $( "#update-interval" ).val config.updateInterval
-        $( "#experimental" ).prop "checked", config.experimental
-        $( "#show-notifications" ).prop "checked", config.notify
-        $( "#notify-spam" ).prop "checked", config.noSpam
-        $( "#play-sound" ).prop "checked", config.playSound
-        $( "#money-alert" ).prop "checked", config.alerts.showCreditOnly
-        $( "#money-amount" ).val config.alerts.minimumCash
-        $( "#track-blueprints" ).prop "checked", config.alerts.showBlueprint
-        $( "#track-nightmare-mods" ).prop "checked", config.alerts.showNightmare
-        $( "#track-resources" ).prop "checked", config.alerts.showResource
-        
-        __all = [].concat config.blueprints, config.mods, config.resources
-        
-        for x in __all
-            console.log x
-            $( "#" + x.ID ).prop "checked", (yes)
-        ###
-        if config.alerts.showBlueprint is (yes)
-            $( "#blueprint-table" ).show()
-        else
-            $( "#blueprint-table" ).hide()
-        
-        if config.alerts.showNightmare is (yes)
-            $( "#mod-table" ).show()
-        else
-            $( "#mod-table" ).hide()
-        
-        if config.alerts.showResource is (yes)
-            $( "#resource-table" ).show()
-        else
-            $( "#resource-table" ).hide()
-        ###
-        $( "#mp3-source" ).attr( "src", config.soundFile ).detach().appendTo "#audio-preview"
-        
-        if config.soundFile.indexOf( "chrome-extension://" ) is 0 #Default MP3
-            fileName = config.soundFile.split( "/" ).slice( -1 ).pop()
-            $( "#default-sounds" ).val decodeURIComponent fileName
-        else
-            $( "#default-sounds" ).val "user-defined"
+    Log.Write "Displaying settings."
+    Settings.load StorageLocation.Sync
         
 checkAllBlueprints = ( c ) ->
     for x in blueprintIds
@@ -137,15 +140,18 @@ checkAllResources = ( c ) ->
     for x in resourceIds
         $( "#" + x ).prop "checked", c
 
+Settings.on "update", updateSettings
+Settings.on "load_sync", loadSettings
+
 $( document ).ready ->
     $( "#save-button" ).click save
     
-    $( "#bp-check-all" ).click -> checkAllBlueprints (yes)
-    $( "#mod-check-all" ).click -> checkAllMods (yes)
+    $( "#bp-check-all" ).click   -> checkAllBlueprints (yes)
+    $( "#mod-check-all" ).click  -> checkAllMods (yes)
     $( "#mats-check-all" ).click -> checkAllResources (yes)
     
-    $( "#bp-uncheck-all" ).click -> checkAllBlueprints (no)
-    $( "#mod-uncheck-all" ).click -> checkAllMods (no)
+    $( "#bp-uncheck-all" ).click   -> checkAllBlueprints (no)
+    $( "#mod-uncheck-all" ).click  -> checkAllMods (no)
     $( "#mats-uncheck-all" ).click -> checkAllResources (no)
 
     $( "#track-blueprints" ).change ->

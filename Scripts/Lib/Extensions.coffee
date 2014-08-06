@@ -19,6 +19,16 @@ Array::sample = ->
     index = Math.randInt @.length - 1
     return @[index]
 
+Array::equals = ( other ) ->
+    if this is other then return yes
+    if this is null or other is null then return no
+    if this.length isnt other.length then return no
+
+    for i in [0 ... this.length] by 1
+        if this[i] isnt other[i] then return no
+
+    return yes
+
 except = ( fn ) ->
     try
         fn?()

@@ -267,12 +267,16 @@ injectDebugFeatures = ->
 
     htmlString = "<div id=\"debug\">
     <button id=\"show-noty\">Show Notification</button>
+    <button id=\"play-sound\">Play Sound</button>
 </div>"
 
     $( htmlString ).insertAfter $ "#footer"
 
     $( "#show-noty" ).click =>
         Message.send "DEBUG_NOTIFY"
+
+    $( "#play-sound" ).click =>
+        Message.send "DEBUG_SOUND"
 
 $( document ).ready =>
     slideOpts =
@@ -282,7 +286,7 @@ $( document ).ready =>
     alertsValue = 360
     invasionsValue = 360
 
-    setupExperimental = =>
+    setupExperimental = ->
         $( "#invasions" ).remove()
         $( "#experimental" ).hide()
 
