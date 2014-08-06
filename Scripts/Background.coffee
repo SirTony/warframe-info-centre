@@ -73,12 +73,12 @@ onUpdateSettings = ->
         if dict.platform isnt app.platform
             local.alerts = { }
             local.invasions = { }
+            Api.platform = dict.platform
 
         app = dict
-        sound = new Audio app.soundFile
+        sound = new Audio app.soundFile unless Audio?
 
         LocalSettings.update local, =>
-            Api.platform = app.platform
             update yes
 
 onResetAlerts = ->
@@ -94,7 +94,7 @@ onShowNotification = ->
 
 setup = ->
     policeOldData()
-    sound = new Audio app.soundFile
+    sound = new Audio app.soundFile unless Audio?
 
     Message.on "UPDATE_SETTINGS",      onUpdateSettings
     Message.on "RESET_ALERTS_COUNTER", onResetAlerts
@@ -247,7 +247,7 @@ update = ( force = no ) ->
         newItemsCount += newAlerts.length
         newItemsCount += newInvasions.length if app.experimental
 
-        return unless newItemsCount > 0
+        return unless ( newAlerts.length + newInvasions ) > 0
 
         for k in newAlerts
             local.alerts[k] = alerts[k]
@@ -257,11 +257,11 @@ update = ( force = no ) ->
         if app.experimental
             local.invasions = invasions
             notify.invasions.show newInvasions
-            sound.play() if app.playSound
+            sound.play() if app.playSound and Audio? and sound?
             chrome.browserAction.setBadgeText text: newItemsCount.toString()
             LocalSettings.update local, =>
         else if newItemsCount > 0
-            sound.play() if app.playSound
+            sound.play() if app.playSound and Audio? and sound?
             chrome.browserAction.setBadgeText text: newItemsCount.toString()
             LocalSettings.update local, =>
 
