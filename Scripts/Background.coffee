@@ -58,6 +58,16 @@ policeOldData = ->
     LocalSettings.update local, =>
         Log.Info "Removed #{count} old alerts."
 
+loadSettings = ( fn ) ->
+    AppSettings.getAll ( x ) =>
+        LocalSettings.getAll ( y ) =>
+            fn? x, y
+
+loadApiData = ( fn ) ->
+    Api.getAlerts ( x ) =>
+        Api.getInvasions ( y ) =>
+            fn? x, y
+
 onUpdateSettings = ->
     AppSettings.getAll ( dict ) =>
         if dict.platform isnt app.platform
@@ -134,7 +144,132 @@ setup = ->
     #setInterval policeOldData, 30000 #Remove every 30 seconds.
     return
 
-update = ( force = no )->
+update = ( force = no ) ->
+    notify =
+        alerts:
+            show:    null
+            verbose: null
+            quiet:   null
+        invasions:
+            show:    null
+            verbose: null
+            quiet:   null
+
+    notify.alerts.show = ( ids ) =>
+        return unless app.notify
+
+        if app.noSpam
+            notify.alerts.quiet ids
+        else
+            notify.alerts.verbose ids
+
+    notify.alerts.verbose = ( ids ) =>
+        for k, v of local.alerts
+            continue if k not in ids
+
+            message = "#{v.message}\n#{v.rewards.credits}"
+
+            if v.rewards.extra.length > 0
+                message += "\n#{v.rewards.extra.join ', '}"
+
+            noty = new Notification "#{v.node} (#{v.planet}) - #{v.faction} #{v.type}", message
+            noty.setType = "basic"
+            noty.show 10
+
+    notify.alerts.quiet = ( ids ) =>
+        noty = new Notification "#{ids.length} new alerts"
+        noty.setType = "list"
+        count = 0
+
+        for k, v of local.alerts
+            continue if k not in ids
+            ++count
+
+            listItem =
+                title: "#{v.node} (#{v.planet}) - #{v.faction} #{v.type}"
+                message: "#{v.message}\n#{v.rewards.credits}"
+
+            if v.rewards.extra.length > 0
+                listItem.message += "\n#{v.rewards.extra.join ', '}"
+
+            noty.addItem listItem
+
+        return unless count > 0
+        noty.show 10
+    
+    notify.invasions.show = ( ids ) =>
+        return unless app.notify
+
+        if app.noSpam
+            notify.invasions.quiet ids
+        else
+            notify.invasions.verbose ids
+
+    notify.invasions.verbose = ( ids ) =>
+        for k, v of local.invasions
+            continue if k not in ids
+
+            message = "Rewards:\n\t#{v.factions.controlling.name} - #{v.factions.controlling.reward}"
+
+            if v.factions.contestant.reward isnt null
+                message += "\n\t#{v.factions.contestant.name} - #{v.factions.contestant.reward}"
+
+            noty = new Notification "#{v.message} on #{v.node} (#{v.planet})", message
+            noty.setType = "basic"
+            noty.show 10
+
+    notify.invasions.quiet = ( ids ) =>
+        count = 0
+
+        noty = new Notification "#{ids.length} new invasions"
+        noty.setType "list"
+
+        for k, v of local.invasions
+            continue if k not in ids
+            ++count
+
+            listItem =
+                title: "#{v.message} on #{v.length} (#{v.planet})"
+                message: "Rewards:\n\t#{v.factions.controlling.name} - #{v.factions.controlling.reward}"
+
+            if v.factions.contestant.reward isnt null
+                listItem.message += "\n\t#{v.factions.contestant.name} - #{v.factions.contestant.reward}"
+
+            noty.addItem listItem
+
+        return unless count > 0
+        noty.show 10
+
+    handle = ( alerts, invasions ) =>
+        newAlerts = keys( alerts ).filter ( x ) => x not of local.alerts
+        newInvasions = keys( invasions ).filter ( x ) => x not of local.invasions
+
+        newItemsCount += newAlerts.length
+        newItemsCount += newInvasions.length if app.experimental
+
+        return unless newItemsCount > 0
+
+        for k in newAlerts
+            local.alerts[k] = alerts[k]
+
+        notify.alerts.show newAlerts
+
+        if app.experimental
+            local.invasions = invasions
+            notify.invasions.show newInvasions
+            sound.play() if app.playSound
+            chrome.browserAction.setBadgeText text: newItemsCount.toString()
+            LocalSettings.update local, =>
+        else if newItemsCount > 0
+            sound.play() if app.playSound
+            chrome.browserAction.setBadgeText text: newItemsCount.toString()
+            LocalSettings.update local, =>
+
+    if force is yes or shouldUpdate()
+        Log.Write "Updating."
+        loadApiData handle
+
+    ###
     finish = =>
         LocalSettings.update local, =>
             if newItemsCount > 0
@@ -236,6 +371,7 @@ update = ( force = no )->
                     finish()
 
                 #End Api.getInvasions
+    ###
 
 ###
     The reload param is for telling the function whether or not
