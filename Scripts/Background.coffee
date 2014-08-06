@@ -229,7 +229,7 @@ update = ( force = no ) ->
             ++count
 
             listItem =
-                title: "#{v.message} on #{v.length} (#{v.planet})"
+                title: "#{v.message} on #{v.node} (#{v.planet})"
                 message: "Rewards:\n\t#{v.factions.controlling.name} - #{v.factions.controlling.reward}"
 
             if v.factions.contestant.reward isnt null
@@ -432,6 +432,8 @@ clearData = ( quick = no ) ->
     return
 
 except ->
+    chrome.browserAction.setBadgeBackgroundColor color: "#5A8FE6"
+
     chrome.alarms.onAlarm.addListener ( alarm ) =>
         switch alarm.name
             when UPDATE_ALARM
