@@ -125,14 +125,12 @@ makeTimeElement = ( start, expire ) ->
     return html
 
 invasionsTracker = ->
-    
     ###
         Invasions are re-built completely every 60 seconds.
     ###
-    LocalSettings.getAll ( x ) => buildInvasions x.invasions
+    Settings.fetch ( x ) => buildInvasions x.local.invasions
 
 alertsTracker = ->
-
     ###
         Every 10 seconds we poll LocalSettings to check if there are any new alerts.
         If there are, we rebuild the alert section HTML to put it in the list while
@@ -145,10 +143,10 @@ alertsTracker = ->
     if trackerTicks is 20
         trackerTicks = 0
 
-        LocalSettings.getAll ( x ) ->
+        Settings.fetch ( x ) =>
             __new = 0
-            for k, v of x.alerts
-                if not owns( x.alerts, k ) or k not in trackedAlerts
+            for k, v of x.local.alerts
+                if not owns( x.local.alerts, k ) or k not in trackedAlerts
                     continue
                 else
                     trackedAlerts[k] = v
@@ -334,15 +332,14 @@ $( document ).ready =>
                 else
                     $( "#alerts-container" ).slideUp slideOpts
     
-    AppSettings.getAll ( dict ) =>
-        setupExperimental() unless dict.experimental
-        $( "#platform" ).text dict.platform
+    Settings.fetch ( dict ) =>
+        setupExperimental() unless dict.sync.experimental
+        $( "#platform" ).text if dict.sync.platform is "XB1" then "Xbox One" else dict.sync.platform
 
-        LocalSettings.getAll ( x ) =>
-            inner = ""
+        inner = ""
 
-            buildAlerts x.alerts
-            buildInvasions x.invasions if dict.experimental
+        buildAlerts    dict.local.alerts
+        buildInvasions dict.local.invasions if dict.sync.experimental
 
-            setInterval alertsTracker, 500 #half second
-            setInterval invasionsTracker, 60000 if dict.experimental #one minute
+        setInterval alertsTracker, 500 #half second
+        setInterval invasionsTracker, 60000 if dict.sync.experimental #one minute

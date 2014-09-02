@@ -71,19 +71,14 @@ save = ->
     }
     
     except =>
-        AppSettings.update dict, =>
+        Settings.update { sync: dict }, =>
             Message.send "UPDATE_SETTINGS"
-            ###
-            chrome.runtime.sendMessage { action: "UPDATE_SETTINGS", config: dict }, ( response ) ->
-                if response.status is ( yes )
-                    console.log "Updated settings."
-                else
-                    console.error "Update settings failed.\n" + response.message
-            ###
             alert "Settings saved successfully."
 
 display = ->
-    AppSettings.getAll ( config ) ->
+    Settings.fetch ( x ) =>
+        config = x.sync
+
         $( "#platform-selector" ).val config.platform
         $( "#update-interval" ).val config.updateInterval
         $( "#experimental" ).prop "checked", config.experimental

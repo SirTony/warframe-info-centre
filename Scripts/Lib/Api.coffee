@@ -2,12 +2,14 @@ class Api
     __platform = "PC"
 
     urls =
-    Alerts:
-        PC:  "http://deathsnacks.com/wf/data/alerts_raw.txt"
-        PS4: "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt",
-    Invasions:
-        PC:  "http://deathsnacks.com/wf/data/invasion_raw.txt",
-        PS4: "http://deathsnacks.com/wf/data/ps4/invasion_raw.txt"
+        Alerts:
+            PC:  "http://deathsnacks.com/wf/data/alerts_raw.txt"
+            PS4: "http://deathsnacks.com/wf/data/ps4/alerts_raw.txt",
+            XB1: "http://deathsnacks.com/wf/data/xbox/alerts_raw.txt"
+        Invasions:
+            PC:  "http://deathsnacks.com/wf/data/invasion_raw.txt",
+            PS4: "http://deathsnacks.com/wf/data/ps4/invasion_raw.txt",
+            XB1: "http://deathsnacks.com/wf/data/xbox/invasion_raw.txt"
 
     httpGet = ( url, success ) ->
         if not isString url
@@ -24,21 +26,17 @@ class Api
         xmlHttp.open "GET", url, yes
         xmlHttp.send null
 
-    @property "platform",
-    get: -> __platform
-    set: ( newPlatform ) ->
-        if not isString newPlatform
-            throw new ArgumentException "platform only accepts string values, {0} given.".format typeof newPlatform
+    @fetch: ( platform = "PC", fn ) ->
+        return unless isString platform
+        return unless platform in keys urls.Alerts
+        return unless platform in keys urls.Invasions
 
-        __platform = newPlatform
-        return
-    , yes
+        getAlerts platform, ( alerts ) =>
+            getInvasions platform, ( invasions ) =>
+                fn? { Alerts: alerts, Invasions: invasions }
 
-    @getAlerts: ( fn ) ->
-        if not isFunction fn
-            throw new ArgumentException "getAlerts expects parameter 1 to be a function, {0} given.".format typeof fn
-
-        httpGet urls.Alerts[__platform], ( text ) ->
+    getAlerts = ( platform, fn ) ->
+        httpGet urls.Alerts[platform], ( text ) ->
             lines = text.split "\n"
 
             if lines.length < 2
@@ -83,11 +81,8 @@ class Api
             return
         return
 
-    @getInvasions: ( fn ) ->
-        if not isFunction fn
-            throw new ArgumentException "getInvasions expecta parameter 1 to be a function, {0} given.".format typeof fn
-
-        httpGet urls.Invasions[__platform], ( text ) ->
+    getInvasions = ( platform, fn ) ->
+        httpGet urls.Invasions[platform], ( text ) ->
             lines = text.split "\n"
 
             if lines.length < 2
