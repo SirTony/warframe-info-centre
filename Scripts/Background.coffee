@@ -3,8 +3,8 @@ local = null
 sound = null
 newItemsCount = 0
 
-`const UPDATE_ALARM  = "UPDATE_ALARM"`
-`const SWEEPER_ALARM = "SWEEPER_ALARM"`
+UPDATE_ALARM  = "UPDATE_ALARM"
+SWEEPER_ALARM = "SWEEPER_ALARM"
 
 appDefaults = {
     platform: "PC",
@@ -63,6 +63,7 @@ onUpdateSettings = ->
         sound = new Audio app.soundFile unless Audio?
 
 onResetAlerts = ->
+    Log.Write "Resetting."
     newItemsCount = 0
 
 onShowNotification = ->
@@ -124,7 +125,7 @@ update = ( force = no ) ->
             noty.show 10
 
     notify.alerts.quiet = ( ids ) =>
-        noty = new Notification "#{ids.length} new alerts"
+        noty = new Notification "#{ids.length} new #{if ids.length > 1 then 'alerts' else 'alert'}"
         noty.setType = "list"
         count = 0
 
@@ -168,7 +169,7 @@ update = ( force = no ) ->
     notify.invasions.quiet = ( ids ) =>
         count = 0
 
-        noty = new Notification "#{ids.length} new invasions"
+        noty = new Notification "#{ids.length} new #{if ids.length > 1 then 'invasions' else 'invasion'}"
         noty.setType "list"
 
         for k, v of local.invasions
@@ -191,20 +192,23 @@ update = ( force = no ) ->
         alerts    = data.Alerts
         invasions = data.Invasions
 
-        newAlerts = keys( alerts ).filter ( x ) => x not of local.alerts
+        newAlerts    = keys( alerts    ).filter ( x ) => x not of local.alerts
         newInvasions = keys( invasions ).filter ( x ) => x not of local.invasions
 
         newItemsCount += newAlerts.length
         newItemsCount += newInvasions.length if app.experimental
 
-        return unless ( newAlerts.length + newInvasions.length ) > 0
+        if app.experimental
+            return unless ( newAlerts.length + newInvasions.length ) > 0
+        else
+            return unless newAlerts.length > 0
 
         for k in newAlerts
             local.alerts[k] = alerts[k]
 
         notify.alerts.show newAlerts
 
-        if app.experimental
+        if app.experimental and newItemsCount > 0
             local.invasions = invasions
             notify.invasions.show newInvasions
             sound.play() if app.playSound and Audio? and sound?

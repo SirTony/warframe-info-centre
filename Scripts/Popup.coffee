@@ -273,6 +273,16 @@ injectDebugFeatures = ->
         Message.send "DEBUG_NOTIFY"
 
 $( document ).ready =>
+    platformImages =
+        Normal:
+            PC: "PC.Normal.png"
+            PS4: "PS4.Normal.png"
+            XB1: "XboxOne.Normal.png"
+        Experimental:
+            PC: "PC.Experimental.png"
+            PS4: "PS4.Experimental.png"
+            XB1: "XboxOne.Experimental.png"
+
     slideOpts =
         duration: 500
         queue: no
@@ -280,27 +290,10 @@ $( document ).ready =>
     alertsValue = 360
     invasionsValue = 360
 
-    setupExperimental = =>
-        $( "#invasions" ).remove()
-        $( "#experimental" ).hide()
-
-        $( "#invasions-expander" ).rotate invasionsValue
-        $( "#invasions-expander" ).rotate
-            bind:
-                click: ->
-                    if invasionsValue is 180
-                        invasionsValue = 360
-                    else if invasionsValue is 360
-                        invasionsValue = 180
-                    else
-                        invasionsValue = 360
-                
-                    $( @ ).rotate animateTo: invasionsValue, duration: 900
-                
-                    if invasionsValue is 360
-                        $( "#invasions-container" ).slideDown slideOpts
-                    else
-                        $( "#invasions-container" ).slideUp slideOpts
+    setupExperimental = ( platform ) =>
+        $( "#invasions" ).hide()
+        $( "#platform" ).attr "src", "Images/App/#{platformImages.Normal[platform]}"
+        $( "#platform" ).attr "src", "#{if platform is 'XB1' then 'Xbox One' else platform}"
 
     $( "#footer #version" ).text "#{App.Version.toString()} (beta)"
     $( ".year" ).text new Date().getFullYear()
@@ -309,10 +302,6 @@ $( document ).ready =>
 
     Message.send "RESET_ALERTS_COUNTER"
     chrome.browserAction.setBadgeText text: ""
-
-    #chrome.runtime.sendMessage action: "RESET_ALERTS_COUNTER", ( response ) =>
-    #    if not response? or not response.status? or response.status is no
-    #        Log.Error "Invalid message."
 
     $( "#alerts-expander" ).rotate alertsValue
     $( "#alerts-expander" ).rotate
@@ -325,16 +314,37 @@ $( document ).ready =>
                 else
                     alertsValue = 360
                 
-                $( @ ).rotate animateTo: alertsValue, duration: 900
+                $( "#alerts-expander" ).rotate animateTo: alertsValue, duration: 900
                 
                 if alertsValue is 360
                     $( "#alerts-container" ).slideDown slideOpts
                 else
                     $( "#alerts-container" ).slideUp slideOpts
+
+    $( "#invasions-expander" ).rotate invasionsValue
+    $( "#invasions-expander" ).rotate
+        bind:
+            click: ->
+                if invasionsValue is 180
+                    invasionsValue = 360
+                else if invasionsValue is 360
+                    invasionsValue = 180
+                else
+                    invasionsValue = 360
+                
+                $( "#invasions-expander" ).rotate animateTo: invasionsValue, duration: 900
+                
+                if invasionsValue is 360
+                    $( "#invasions-container" ).slideDown slideOpts
+                else
+                    $( "#invasions-container" ).slideUp slideOpts
     
     Settings.fetch ( dict ) =>
-        setupExperimental() unless dict.sync.experimental
-        $( "#platform" ).text if dict.sync.platform is "XB1" then "Xbox One" else dict.sync.platform
+        unless dict.sync.experimental
+            setupExperimental( dict.sync.platform )
+        else
+            $( "#platform" ).attr "src", "Images/App/#{platformImages.Experimental[dict.sync.platform]}"
+            $( "#platform" ).attr "alt", "#{if dict.sync.platform is 'XB1' then 'Xbox One' else dict.sync.platform} (Experimental)"
 
         inner = ""
 

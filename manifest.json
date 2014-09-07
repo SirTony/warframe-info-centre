@@ -4,8 +4,9 @@
     "content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
     
     "name":        "Warframe Info Centre",
+    "short_name":  "WIC",
     "description": "This extension keeps you updated with the latest alerts and invasions in Warframe.",
-    "version": "0.8.5.74",
+    "version": "0.8.6.76",
     "author":      "Tony Montana (/u/SirNastyPants)",
     
     "offline_enabled":        false,
