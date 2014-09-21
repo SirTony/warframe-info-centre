@@ -93,10 +93,8 @@ task "clean", "Cleans all compiled and exported files.", ( options ) =>
 buildAppFile = ( options ) ->
     console.log "  - Building App.js..."
     template = fs.readFileSync "App.js.template", encoding: "utf8"
-    regex = /\<\:([A-Z\$][A-Z0-9_]*)\:\>/gi
-    
-    manifest = fs.readFileSync "manifest.json", encoding: "utf8"
-    version  = manifest.match( /"version":\s*"(\d+).(\d+).(\d+).(\d+)"/ )[1 ... 5].map ( x ) => +x
+    manifest = JSON.parse fs.readFileSync( "manifest.json", encoding: "utf8" )
+    version  = manifest.version.split( "." ).map ( x ) => parseInt x
     
     versionId     = version[..].map ( x ) => Math.max 1, x
     versionId[0] *= 100000
@@ -115,6 +113,7 @@ buildAppFile = ( options ) ->
         VERSION_ID:       versionId.reduce ( x, y ) => x + y
         VERSION_STRING:   "\"#{[ version[0], version[1], version[2], version[3] ].join '.'}\""
     
+    regex = /\<\:([A-Z\$][A-Z0-9_]*)\:\>/gi
     while regex.test template
         template = template.replace regex, ( $0, $1 ) =>
             replacement = lookup[$1]

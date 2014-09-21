@@ -11,21 +11,6 @@ class Api
             PS4: "http://deathsnacks.com/wf/data/ps4/invasion_raw.txt",
             XB1: "http://deathsnacks.com/wf/data/xbox/invasion_raw.txt"
 
-    httpGet = ( url, success ) ->
-        if not isString url
-            throw new ArgumentException "httpGet expects parameter 1 to be a string, {0} given.".format( typeof url )
-
-        if not isFunction success
-            throw new ArgumentException "httpGet expects parameter 2 to be a function, {0} given.".format( typeof success )
-
-        xmlHttp = new XMLHttpRequest()
-        xmlHttp.onreadystatechange = ->
-            if xmlHttp.readyState is 4 and xmlHttp.status is 200
-                success xmlHttp.responseText
-
-        xmlHttp.open "GET", url, yes
-        xmlHttp.send null
-
     @fetch: ( platform = "PC", fn ) ->
         return unless isString platform
         return unless platform in keys urls.Alerts

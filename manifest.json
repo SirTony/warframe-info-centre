@@ -6,7 +6,7 @@
     "name":        "Warframe Info Centre",
     "short_name":  "WIC",
     "description": "This extension keeps you updated with the latest alerts and invasions in Warframe.",
-    "version": "0.8.6.76",
+    "version": "0.8.6.77",
     "author":      "Tony Montana (/u/SirNastyPants)",
     
     "offline_enabled":        false,
@@ -18,7 +18,7 @@
         "128": "Icons/Warframe.Large.png"
     },
     
-    "options_page": "Settings.html",
+    "options_page": "Pages/Settings.html",
     
     "background": {
         "scripts": [
@@ -37,7 +37,7 @@
     
     "browser_action": {
         "default_icon": "Icons/Warframe.Small.png",
-        "default_popup": "Popup.html"
+        "default_popup": "Pages/Popup.html"
     },
     
     "permissions": [

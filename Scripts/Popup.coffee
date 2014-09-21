@@ -1,60 +1,5 @@
 htmlFormat = {
     ###
-        Format specifiers:
-            {0} = ID
-            {1} = the <span> element representing the alert's timer.
-            {2} = location in 'Node (Planet)' format
-            {3} = level range in 'Lv. X-Y' format, where X is the lower bound, and Y is the upper bound.
-            {4} = mission type
-            {5} = mission description
-            {6} = credit amount.
-    ###
-    creditOnly: "<table id=\"alerts-table-{0}\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
-    <tr>
-        <td class=\"location\">{2} - <em>{3} {4}</em></td>
-        <td class=\"time-left\">{1}</td>
-    </tr>
-    <tr>
-        
-        <td><em>{5}</em></td>
-        <td class=\"credit-reward\">{6}</td>
-    </tr>
-</table>",
-
-    ###
-        Format specifiers:
-            {0} = ID
-            {1} = the <span> element representing the alert's time
-            {2} = location in 'Node (Planet)' format
-            {3} = level range in 'Lv. X-Y' format, where X is the lower bound, and Y is the upper bound.
-            {4} = mission type
-            {5} = other reward type.
-            {6} = mission description
-            {7} = credit amount.
-    ###
-    extraReward: "<table id=\"alerts-table-{0}\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
-    <tr>
-        <td colspan=\"2\" class=\"time-left\">{1}</td>
-    </tr>
-    <tr>
-        <td class=\"location\">{2} - <em>{3} {4}</em></td>
-        <td class=\"other-reward\">
-            <span>{5}</span>
-        </td>
-    </tr>
-    <tr>
-        <td><em>{6}</em></td>
-        <td class=\"credit-reward\">{7}</td>
-    </tr>
-</table>",
-    
-    noAlerts: "<table id=\"alerts-table-0\" ><!--cellspacing=\"0\" cellpadding=\"3\"-->
-    <tr>
-        <td style=\"text-align: center;\"><em>No alerts at this time.</em></td>
-    </tr>
-</table>",
-
-    ###
         {0}  - ID
         {1}  - Location
         {2}  - Type
@@ -89,10 +34,10 @@ htmlFormat = {
     <tr>
         <td colspan=\"2\">
             <div style=\"width: {12}%;\" class=\"progress {13} right\">
-                <img class=\"faction-badge\" src=\"Images/App/{6}.png\" height=\"20\" width=\"20\" />
+                <img class=\"faction-badge\" src=\"../Images/App/{6}.png\" height=\"20\" width=\"20\" />
             </div>
             <div style=\"width: {14}%;\" class=\"progress {15} left\">
-                <img class=\"faction-badge\" src=\"Images/App/{3}.png\" height=\"20\" width=\"20\" />
+                <img class=\"faction-badge\" src=\"../Images/App/{3}.png\" height=\"20\" width=\"20\" />
             </div>
         </td>
     </tr>
@@ -110,19 +55,16 @@ htmlFormat = {
 trackedAlerts = {}
 trackerTicks = 0
 
-makeTimeElement = ( start, expire ) ->
-    __now = now()
-    html = ""
-    
-    if expire - __now <= 0
-        html = "<span class=\"urgent\">Expired {0} ago</span>".format( timeSpan( Math.abs( expire - __now ) ) )
-    else if start > __now
-        html = "<span class=\"future\">Starts in {0}</span>".format( timeSpan( Math.abs( start - __now ) ) )
-    else
-        attr = if expire - __now <= 60 then " class=\"urgent\"" else ""
-        html = "<span{0}>{1}</span>".format attr, timeSpan( expire - __now )
+makeTimeElement = ( start, expire, asDOM = no ) ->
+    timeTemplate = Template.fetch "timeElement", no, yes
+    timeTemplate.registerFilter "formatTime", ( x ) => timeSpan Math.abs parseInt x
 
-    return html
+    timeData =
+        Class:    if expire - now() <= 60 then "urgent" else if start > now() then "future" else ""
+        TimeLeft: expire - now()
+
+    rendered = timeTemplate.render timeData
+    return if asDOM then $ rendered else rendered
 
 invasionsTracker = ->
     ###
@@ -146,7 +88,7 @@ alertsTracker = ->
         Settings.fetch ( x ) =>
             __new = 0
             for k, v of x.local.alerts
-                if not owns( x.local.alerts, k ) or k not in trackedAlerts
+                if not owns( x.local.alerts, k ) or k not of trackedAlerts
                     continue
                 else
                     trackedAlerts[k] = v
@@ -163,13 +105,13 @@ alertsTracker = ->
             continue
         
         if v.expireTime - now() <= -120
-            $( "#alerts-table-{0}".format k ).remove()
+            $( "#alerts-table-#{k}" ).remove()
             delete trackedAlerts[k]
         else
-            $( "#alerts-table-{0} .time-left".format k ).html( makeTimeElement( v.startTime, v.expireTime ) )
+            $( "#alerts-container #alerts-table-#{k} .time-left" ).html makeTimeElement v.startTime, v.expireTime
         
         if $( "#alerts-container" ).children().length is 0
-            $( "#alerts-container" ).html htmlFormat.noAlerts
+           $( "#alerts-container" ).html Template.load "alerts", NoAlerts: yes
 
 
 buildInvasions = ( object ) ->
@@ -230,49 +172,58 @@ buildInvasions = ( object ) ->
     $( "#invasions-container" ).html inner
 
 buildAlerts = ( object ) ->
-    inner = ""
+    $( "#alerts-container table" ).remove();
 
     for k, v of object
+        continue unless owns object, k
+
         except =>
-            if not owns object, k
-                return
-                
             diff = v.expireTime - now()
 
             if diff <= -120
                 delete trackedAlerts[k]
                 return
-                
-            if k not in trackedAlerts
-                trackedAlerts[k] = v
-                
-            type = "{0} {1}".format v.faction, v.type
-            where = "{0} ({1})".format v.node, v.planet
-            range = "Lv. {0}-{1}".format v.levelRange.low, v.levelRange.high
-                
-            if v.rewards.extra.length > 0
-                inner += htmlFormat.extraReward.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.rewards.extra[0], v.message, v.rewards.credits )
-            else
-                inner += htmlFormat.creditOnly.format( k, makeTimeElement( v.startTime, v.expireTime ), where, range, type, v.message, v.rewards.credits )
-        
-    if inner is ""
-        inner = htmlFormat.noAlerts
-            
-    $( "#alerts-container" ).html inner
+
+            trackedAlerts[k] = v
+
+            templateData =
+                NoAlerts:  no
+                ID:        k
+                Node:      v.node
+                Planet:    v.planet
+                Faction:   v.faction
+                Type:      v.type
+                LevelMin:  v.levelRange.low
+                LevelMax:  v.levelRange.high
+                Desc:      v.message
+                Credits:   v.rewards.credits
+                Rewards:   if v.rewards.extra is null or v.rewards.length is 0 then 0 else v.rewards.extra
+
+            $( "#alerts-container" ).append Template.load "alerts", templateData
+            $( "#alerts-container #alerts-table-#{k} .time-left" ).html makeTimeElement v.startTime, v.expireTime
 
 injectDebugFeatures = ->
     Log.Error "Only available in debug mode." unless App.Debug
 
-    htmlString = "<div id=\"debug\">
-    <button id=\"show-noty\">Show Notification</button>
-</div>"
-
-    $( htmlString ).insertAfter $ "#footer"
+    $( Template.fetch "debug", yes ).insertAfter $ "#footer"
 
     $( "#show-noty" ).click =>
         Message.send "DEBUG_NOTIFY"
 
+    $( "#play-sound" ).click =>
+        Message.send "DEBUG_SOUND"
+
 $( document ).ready =>
+    combyne.settings.delimiters =
+        START_RAW:  "[["
+        END_RAW:    "]]"
+        START_PROP: "{{"
+        END_PROP:   "}}"
+        START_EXPR: "{%"
+        END_EXPR:   "%}"
+        COMMENT:    "#"
+        FILTER:     "->"
+
     platformImages =
         Normal:
             PC: "PC.Normal.png"
@@ -292,7 +243,7 @@ $( document ).ready =>
 
     setupExperimental = ( platform ) =>
         $( "#invasions" ).hide()
-        $( "#platform" ).attr "src", "Images/App/#{platformImages.Normal[platform]}"
+        $( "#platform" ).attr "src", "../Images/App/#{platformImages.Normal[platform]}"
         $( "#platform" ).attr "src", "#{if platform is 'XB1' then 'Xbox One' else platform}"
 
     $( "#footer #version" ).text "#{App.Version.toString()} (beta)"
@@ -343,7 +294,7 @@ $( document ).ready =>
         unless dict.sync.experimental
             setupExperimental( dict.sync.platform )
         else
-            $( "#platform" ).attr "src", "Images/App/#{platformImages.Experimental[dict.sync.platform]}"
+            $( "#platform" ).attr "src", "../Images/App/#{platformImages.Experimental[dict.sync.platform]}"
             $( "#platform" ).attr "alt", "#{if dict.sync.platform is 'XB1' then 'Xbox One' else dict.sync.platform} (Experimental)"
 
         inner = ""

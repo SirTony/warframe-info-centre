@@ -9,6 +9,21 @@ isBoolean   = ( x ) -> typeof x is "boolean"
 now = -> Math.floor new Date().getTime() / 1000
 Math.randInt = ( max ) -> Math.floor Math.random() * max
 
+httpGet = ( url, success ) ->
+    if not isString url
+        throw new ArgumentException "httpGet expects parameter 1 to be a string, {0} given.".format( typeof url )
+
+    if not isFunction success
+        throw new ArgumentException "httpGet expects parameter 2 to be a function, {0} given.".format( typeof success )
+
+    xmlHttp = new XMLHttpRequest()
+    xmlHttp.onreadystatechange = ->
+        if xmlHttp.readyState is 4 and xmlHttp.status is 200
+            success? xmlHttp.responseText
+
+    xmlHttp.open "GET", url, yes
+    xmlHttp.send null
+
 String.random = ( len = 5, chars = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ".split "" ) ->
     str = [ ]
     str.push chars.sample() for _ in [ 0 ... len ]
@@ -24,7 +39,7 @@ except = ( fn ) ->
         fn?()
     catch e
         Log.Error if e.getMessage? then e.getMessage() else e.toString()
-        Log.Trace e
+        Log.Trace e.stack unless e.getMessage?
 
 Function::property = ( prop, fn, isStatic = no ) ->
     target = if isStatic then @ else @::

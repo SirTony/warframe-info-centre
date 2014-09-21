@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+    <head>
+        <title>Warframe Info Centre</title>
+        <meta http-equiv="content-type" content="text/html;charset=utf-8" />
+        <meta http-equiv="cache-control" content="no-cache" />
+        <meta http-equiv="pragma" content="no-cache" />
+        <meta http-equiv="expires" content="0" />
+        <script type="text/javascript" src="../Scripts/App.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Message.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Log.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/jQuery.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/jQuery.Easing.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/jQuery.Rotate.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Exceptions.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Extensions.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Combyne.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Template.js"></script>
+        <script type="text/javascript" src="../Scripts/Lib/Settings.js"></script>
+        <script type="text/javascript" src="../Scripts/Popup.js"></script>
+        <link rel="stylesheet" type="text/css" href="../Styles/Common.css" media="all" />
+        <link rel="stylesheet" type="text/css" href="../Styles/Popup.css" media="all" />
+    </head>
+
+    <body>
+        <img id="platform" src="../Images/App/PC.Normal.png" alt="PC" />
+        <div id="alerts" class="group">
+            <div id="alerts-head" class="head">
+                <a href="javascript:void(0);" class="expander"><img width="20" height="20" id="alerts-expander" src="../Images/App/Expander.png" alt="Expander" /></a>
+                <span class="text">Alerts <span id="alerts-count"></span></span>
+                <img src="../Images/App/Separator.png" class="separator" alt="Separator" />
+            </div>
+            <div id="alerts-container" class="container"></div>
+        </div>
+        <div id="invasions" class="group">
+            <div id="invasions-head" class="head">
+                <a href="javascript:void(0);" class="expander"><img width="20" height="20" id="invasions-expander" src="../Images/App/Expander.png" alt="Expander" /></a>
+                <span class="text">Invasions <span id="invasions-count"></span></span>
+                <img src="../Images/App/Separator.png" class="separator" alt="Separator" />
+            </div>
+            <div id="invasions-container" class="container">
+            </div>
+        </div>
+        <img class="lotus" src="../Images/App/Lotus.png" alt="Lotus" />
+        <div id="footer">
+            Version <span id="version"></span>
+            <br />Powered by <a href="http://www.deathsnacks.com/" target="_blank">Deathsnacks.com</a>
+            <br />WARFRAME copyright Digital Extremes &copy; 2012-<span class="year"></span>
+            <br />Warframe Info Centre copyright Tony Montana &copy; 2014-<span class="year"></span>
+        </div>
+
+        <!-- Templates -->
+        <script type="template" id="timeElement">
+            <span class="{{Class}}">{{TimeLeft -> formatTime}}</span>
+        </script>
+
+        <script type="template" id="debug">
+            <div id="debug">
+                <button id="show-noty">Show Notification</button>
+                <button id="play-sound">Play Sound</button>
+            </div>
+        </script>
+
+        <script type="template" id="alerts">
+            {%if NoAlerts%}
+                <table id="alerts-table-0" >
+                    <tr>
+                        <td style="text-align: center;"><em>No alerts at this time.</em></td>
+                    </tr>
+                </table>
+            {%elsif Rewards != 0%}
+                <table id="alerts-table-{{ID}}" >
+                    <tr>
+                        <td colspan="2" class="time-left"></td>
+                    </tr>
+                    <tr>
+                        <td class="location">{{Node}} ({{Planet}}) - <em>Lv. {{LevelMin}} - {{LevelMax}} {{Faction}} {{Type}}</em></td>
+                        <td class="other-reward">
+                            {%each Rewards%}
+                                <span>{{.}}</span>
+                            {%endeach%}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><em>{{Desc}}</em></td>
+                        <td class="credit-reward">{{Credits}}</td>
+                    </tr>
+                </table>
+            {%else%}
+                <table id="alerts-table-{{ID}}" >
+                    <tr>
+                        <td class="location">{{Node}} ({{Planet}}) - <em>Lv. {{LevelMin}} - {{LevenMax}} {{Faction}} {{Type}}</em></td>
+                        <td class="time-left"></td>
+                    </tr>
+                    <tr>
+        
+                        <td><em>{{Desc}}</em></td>
+                        <td class="credit-reward">{{Credits}}</td>
+                    </tr>
+                </table>
+            {%endif%}
+        </script>
+    </body>
+    
+</html>
