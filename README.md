@@ -17,7 +17,7 @@ Features
 - [X] Invasions support.
 - [ ] Dark Sector support.
 - [ ] Fully configurable.
-- [ ] User interface.
+- [X] User interface.
 
 Building
 ========
